@@ -1,0 +1,10 @@
+{
+  "name": "pusher-feeds-server",
+  "version": "0.1.0",
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^7.4.1",
+    "request": "^2.81.0",
+    "request-promise-native": "^1.0.3"
+  }
+}
