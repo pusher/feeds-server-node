@@ -50,7 +50,7 @@ class PusherFeeds {
     });
   }
 
-  authenticate(req, res, hasPermission, userId) {
+  authorize(req, res, userId, hasPermission) {
     const { feed_id: feedId, type } = url.parse(req.url, true).query;
     if (!feedId || !type) {
       send(res, 400, "text/plain",
