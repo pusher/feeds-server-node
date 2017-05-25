@@ -10,7 +10,7 @@ function server({ appId, appKeyId, appKeySecret }) {
     feeds: {
       permission: {
         type: "*",
-        feedId: "*"
+        feed_id: "*"
       }
     }
   };
@@ -28,7 +28,7 @@ function client({ appId, appKeyId, appKeySecret, feedId, type, userId }) {
     feeds: {
       permission: {
         type,
-        feedId,
+        feed_id: feedId,
       }
     }
   };
