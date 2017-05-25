@@ -3,6 +3,9 @@ const url = require("url");
 const tokens = require("./pusher-feeds-tokens")
 
 const defaultHost = "api-ceres.kube.pusherplatform.io";
+const feedIdRegex = /^[a-zA-Z0-9_-]+$/;
+// Permission types that clients may request; currently just "READ"
+const clientPermissionTypes = ["READ"];
 
 function send(res, status, contentType, data) {
   res.statusCode = status;
@@ -50,16 +53,22 @@ class PusherFeeds {
   authenticate(req, res, hasPermission, userId) {
     const { feed_id: feedId, type } = url.parse(req.url, true).query;
     if (!feedId || !type) {
-      send(res, 400, "text/plain", "Bad Request");
-      return;
-    }
-    if (!hasPermission(feedId, type)) {
+      send(res, 400, "text/plain",
+        "Must provide feed_id and type query parameter"
+      );
+    } else if (!feedId.match(feedIdRegex)) {
+      send(res, 400, "text/plain", `feed_id must match regex ${feedIdRegex}`);
+    } else if (!clientPermissionTypes.includes(type)) {
+      send(res, 400, "text/plain",
+        `type must be one of ${JSON.stringify(clientPermissionTypes)}`
+      );
+    } else if (hasPermission(feedId, type)) {
+      send(res, 200, "application/json", JSON.stringify({
+        token: tokens.client(Object.assign({}, this, { feedId, type, userId }))
+      }));
+    } else {
       send(res, 403, "text/plain", "Forbidden");
-      return;
     }
-    send(res, 200, "application/json", JSON.stringify({
-      token: tokens.client(Object.assign({}, this, { feedId, type, userId }))
-    }));
   }
 }
 

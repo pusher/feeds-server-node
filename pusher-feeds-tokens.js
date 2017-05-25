@@ -8,9 +8,9 @@ function server({ appId, appKeyId, appKeySecret }) {
     app: appId,
     iss: appKeyId,
     feeds: {
-      permissions: {
-        type: [ "*" ],
-        path: "*"
+      permission: {
+        type: "*",
+        feedId: "*"
       }
     }
   };
@@ -26,9 +26,9 @@ function client({ appId, appKeyId, appKeySecret, feedId, type, userId }) {
     exp: now - tokenLeeway + tokenExpiry,
     sub: userId,
     feeds: {
-      permissions: {
-        type: [ "*" ],
-        path: "*"
+      permission: {
+        type,
+        feedId,
       }
     }
   };
