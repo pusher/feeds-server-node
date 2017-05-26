@@ -39,7 +39,7 @@ const server = http.createServer((req, res) => {
   const session = { userId: "callum" };
   // We don't require users to grant access based on userId, so the callback
   // only takes feedId and type.
-  feeds.authorize(req, res, session.userId, (feedId, type) => {
+  feeds.authorize(req, res, { userId: session.userId }, (feedId, type) => {
     return hasPermission(session.userId, feedId, type);
   });
 });

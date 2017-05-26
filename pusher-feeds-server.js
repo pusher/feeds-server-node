@@ -16,8 +16,8 @@ function send(res, status, contentType, data) {
 class PusherFeeds {
   constructor({ appId, appKey, host }) {
     host = host || defaultHost;
-    this.appID = appId;
-    this.urlBase = `https://${host}/apps/${this.appID}/services/feeds/v1`;
+    this.appId = appId;
+    this.urlBase = `https://${host}/apps/${this.appId}/services/feeds/v1`;
 
     const keyParts = appKey.split(":");
     if (keyParts.length != 2) {
@@ -50,7 +50,7 @@ class PusherFeeds {
     });
   }
 
-  authorize(req, res, userId, hasPermission) {
+  authorize(req, res, { userId }, hasPermission) {
     const { feed_id: feedId, type } = url.parse(req.url, true).query;
     if (!feedId || !type) {
       send(res, 400, "text/plain",
