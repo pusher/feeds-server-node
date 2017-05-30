@@ -33,7 +33,7 @@ class PusherFeeds {
       method: "POST",
       url: `${this.urlBase}/feeds/${feedId}/items`,
       headers: {
-        Authorization: `JWT ${this.serverToken}`
+        Authorization: `Bearer ${this.serverToken}`
       },
       body: { items },
       json: true
@@ -44,7 +44,7 @@ class PusherFeeds {
     return request({
       url: `${this.urlBase}/feeds?limit=${limit}&prefix=${prefix}`,
       headers: {
-        Authorization: `JWT ${this.serverToken}`
+        Authorization: `Bearer ${this.serverToken}`
       },
       json: true
     });
