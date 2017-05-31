@@ -3,7 +3,7 @@ const url = require("url");
 const tokens = require("./pusher-feeds-tokens")
 
 const defaultHost = "api-ceres.kube.pusherplatform.io";
-const feedIdRegex = /^[a-zA-Z0-9_-]+$/;
+const feedIdRegex = /^[a-zA-Z0-9-]+$/;
 // Permission types that clients may request; currently just "READ"
 const clientPermissionTypes = ["READ"];
 
