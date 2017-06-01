@@ -3,27 +3,15 @@ const jwt = require("jsonwebtoken");
 const tokenLeeway = 30;
 const tokenExpiry = 24 * 60 * 60;
 
-function server({ appId, appKeyId, appKeySecret }) {
-  const claims = {
-    app: appId,
-    iss: appKeyId,
-    feeds: {
-      permission: {
-        type: "*",
-        feed_id: "*"
-      }
-    }
-  };
-  return jwt.sign(claims, appKeySecret);
-}
-
-function client({ appId, appKeyId, appKeySecret, feedId, type, userId }) {
+function token({ appId, appKeyId, appKeySecret, feedId, type, userId }) {
   const now = Math.floor(Date.now() / 1000);
+  const issuedAt = now - tokenLeeway;
+  const expiresAt = issuedAt + tokenExpiry;
   const claims = {
     app: appId,
-    iss: appKeyId,
-    iat: now - tokenLeeway,
-    exp: now - tokenLeeway + tokenExpiry,
+    iss: `keys/${appKeyId}`,
+    iat: issuedAt,
+    exp: expiresAt,
     sub: userId,
     feeds: {
       permission: {
@@ -32,7 +20,10 @@ function client({ appId, appKeyId, appKeySecret, feedId, type, userId }) {
       }
     }
   };
-  return jwt.sign(claims, appKeySecret);
+  return {
+    token: jwt.sign(claims, appKeySecret),
+    refresh: expiresAt - 60 * 60
+  };
 }
 
-module.exports = { server, client }
+module.exports = token;

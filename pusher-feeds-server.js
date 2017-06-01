@@ -24,8 +24,18 @@ class PusherFeeds {
       throw new Error("Invalid app key");
     }
     [ this.appKeyId, this.appKeySecret ] = keyParts;
+  }
 
-    this.serverToken = tokens.server(this);
+  get token() {
+    if (this.token && this.refreshTokenAt < Math.floor(Date.now() / 1000)) {
+      return this.token;
+    }
+    const { token, refreshAt } = tokens(
+      Object.assign({ feedId: "*", type: "*" }, this)
+    );
+    this.token = token;
+    this.refreshTokenAt = refreshAt;
+    return this.token;
   }
 
   publish(feedId, items) {
@@ -33,7 +43,7 @@ class PusherFeeds {
       method: "POST",
       url: `${this.urlBase}/feeds/${feedId}/items`,
       headers: {
-        Authorization: `Bearer ${this.serverToken}`
+        Authorization: `Bearer ${this.token}`
       },
       body: { items },
       json: true
@@ -63,9 +73,9 @@ class PusherFeeds {
         `type must be one of ${JSON.stringify(clientPermissionTypes)}`
       );
     } else if (hasPermission(feedId, type)) {
-      send(res, 200, "application/json", JSON.stringify({
-        token: tokens.client(Object.assign({}, this, { feedId, type, userId }))
-      }));
+      send(res, 200, "application/json",
+        JSON.stringify(tokens(Object.assign({ feedId, type, userId }, this)))
+      );
     } else {
       send(res, 403, "text/plain", "Forbidden");
     }
