@@ -27,14 +27,14 @@ class PusherFeeds {
   }
 
   get token() {
-    if (this.token && this.refreshTokenAt < Math.floor(Date.now() / 1000)) {
+    if (this.token && this.refreshToken < Math.floor(Date.now() / 1000)) {
       return this.token;
     }
-    const { token, refreshAt } = tokens(
+    const { token, refresh } = tokens(
       Object.assign({ feedId: "*", type: "*" }, this)
     );
     this.token = token;
-    this.refreshTokenAt = refreshAt;
+    this.refreshToken = refresh;
     return this.token;
   }
 
