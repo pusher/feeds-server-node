@@ -5,7 +5,8 @@ $ curl 'http://localhost:5000/feeds/tokens?feed_id=private-callum&type=READ'
 
 200 OK:
 {
-  "token": "...jwt..."
+  "token": "...jwt...",
+  "refresh": unix_timestamp
 }
 
 or
