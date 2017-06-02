@@ -1,0 +1,10 @@
+{
+  "name": "pusher-feeds-server-example",
+  "version": "0.1.0",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "express-session": "^1.15.3"
+  }
+}

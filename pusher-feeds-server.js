@@ -1,6 +1,6 @@
-const request = require("request-promise-native");
+const pusher = require("pusher-platform");
 const url = require("url");
-const tokens = require("./pusher-feeds-tokens")
+const Readable = require('stream').Readable;
 
 const defaultHost = "api-ceres.kube.pusherplatform.io";
 const feedIdRegex = /^[a-zA-Z0-9-]+$/;
@@ -13,25 +13,43 @@ function send(res, status, contentType, data) {
   res.end(data);
 }
 
+function jsonToReadable(json) {
+  const s = new Readable();
+  s.push(JSON.stringify(json));
+  s.push(null);
+  return s;
+}
+
+function feedsClaims(feedId, type) {
+  return {
+    serviceClaims: {
+      feeds: {
+        permission: {
+          feed_id: feedId,
+          type: type
+        }
+      }
+    }
+  }
+}
+
 class PusherFeeds {
   constructor({ appId, appKey, host }) {
-    host = host || defaultHost;
-    this.appId = appId;
-    this.urlBase = `https://${host}/apps/${this.appId}/services/feeds/v1`;
+    this.basePath = "services/feeds/v1/feeds";
 
-    const keyParts = appKey.split(":");
-    if (keyParts.length != 2) {
-      throw new Error("Invalid app key");
-    }
-    [ this.appKeyId, this.appKeySecret ] = keyParts;
+    this.pusherApp = new pusher.App({
+      cluster: host || defaultHost,
+      appId: appId,
+      appKey: appKey,
+    });
   }
 
   get token() {
     if (this._token && this._refresh < Math.floor(Date.now() / 1000)) {
       return this._token;
     }
-    const { token, refresh } = tokens(
-      Object.assign({ feedId: "*", type: "*" }, this)
+    const { token, refresh } = this.pusherApp.generateAccessToken(
+      feedsClaims("*", "*")
     );
     this._token = token;
     this._refresh = refresh;
@@ -39,32 +57,34 @@ class PusherFeeds {
   }
 
   publish(feedId, items) {
-    return request({
+    return this.pusherApp.request({
       method: "POST",
-      url: `${this.urlBase}/feeds/${feedId}/items`,
+      path: `${this.basePath}/${feedId}/items`,
+      jwt: this.token,
       headers: {
-        Authorization: `Bearer ${this.token}`
+        "Content-Type": "application/json"
       },
-      body: { items },
-      json: true
-    });
+      body: jsonToReadable({ items }),
+    })
   }
 
   list(limit="", prefix="") {
-    return request({
-      url: `${this.urlBase}/feeds?limit=${limit}&prefix=${prefix}`,
+    return this.pusherApp.request({
+      method: "GET",
+      path: `${this.basePath}?limit=${limit}&prefix=${prefix}`,
+      jwt: this.token,
       headers: {
-        Authorization: `Bearer ${this.serverToken}`
+        "Content-Type": "application/json"
       },
-      json: true
     });
   }
 
   authorize(req, res, { userId }, hasPermission) {
-    const { feed_id: feedId, type } = url.parse(req.url, true).query;
+    const feedId = req.body.feed_id;
+    const type = req.body.type;
     if (!feedId || !type) {
       send(res, 400, "text/plain",
-        "Must provide feed_id and type query parameter"
+        "Must provide feed_id and type in the request body"
       );
     } else if (!feedId.match(feedIdRegex)) {
       send(res, 400, "text/plain", `feed_id must match regex ${feedIdRegex}`);
@@ -73,9 +93,7 @@ class PusherFeeds {
         `type must be one of ${JSON.stringify(clientPermissionTypes)}`
       );
     } else if (hasPermission(feedId, type)) {
-      send(res, 200, "application/json",
-        JSON.stringify(tokens(Object.assign({ feedId, type, userId }, this)))
-      );
+      this.pusherApp.authenticate(req, res, feedsClaims(feedId, type));
     } else {
       send(res, 403, "text/plain", "Forbidden");
     }

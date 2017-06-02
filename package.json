@@ -4,6 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "jsonwebtoken": "^7.4.1",
+    "pusher-platform": "https://github.com/pusher/pusher-platform-nodejs.git#allow_custom_claims",
     "request": "^2.81.0",
     "request-promise-native": "^1.0.3"
   }
