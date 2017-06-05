@@ -1,6 +1,7 @@
 {
   "name": "pusher-feeds-server",
   "version": "0.1.0",
+  "main": "./pusher-feeds-server.js",
   "license": "MIT",
   "dependencies": {
     "jsonwebtoken": "^7.4.1",
