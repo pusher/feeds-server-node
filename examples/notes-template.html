@@ -1,0 +1,105 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>1984 Notes</title>
+  <script src="/client.js"></script>
+  <script>
+function publishToNewsfeed() {
+  const e = window.event.preventDefault();
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/newsfeed", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify({
+    message: document.getElementById("newsfeed_message").value,
+    author: "$USER_ID"
+  }));
+  document.getElementById("newsfeed_message").value = "";
+}
+
+function publishToNotes() {
+  console.log(document.getElementById("note_message").value);
+  window.event.preventDefault();
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/notes/$NOTE_ID", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send(JSON.stringify({
+    message: document.getElementById("note_message").value
+  }));
+  document.getElementById("note_message").value = "";
+}
+
+function formatTime(timestamp) {
+  const t = new Date(timestamp * 1000);
+  return `${t.getHours()}:${t.getMinutes()}`;
+}
+
+const pusherFeeds = new PusherFeeds({
+  cluster: "api-staging-ceres.kube.pusherplatform.io",
+  serviceId: "auth-example-app",
+});
+pusherFeeds.feed({
+  feedId: "newsfeed",
+}).subscribe({
+  tailSize: 10,
+  onEvent: ({ body: { created, data } }) => {
+    const itemEl = document.createElement("li");
+    itemEl.textContent =
+      `${formatTime(created)}: ${data.message} – ${data.author}`;
+    document.getElementById("newsfeed").prepend(itemEl);
+  }
+});
+
+pusherFeeds.feed({
+  feedId: "private-$NOTE_ID",
+}).subscribe({
+  tailSize: 10,
+  onEvent: ({ body: { created, data } }) => {
+    const itemEl = document.createElement("li");
+    itemEl.textContent = `${formatTime(created)}: ${data.message}`;
+    document.getElementById("notes").prepend(itemEl);
+  },
+  onError: () => {
+    const errorEl = document.createElement("span");
+    errorEl.textContent = "You are not authorized to see these notes!";
+    document.getElementById("notes").replaceWith(errorEl);
+  }
+});
+</script>
+</head>
+
+<body>
+  <div>Logged in as: $USER_ID</div>
+  <div style="border-style: solid; width: 49%; float: left">
+    Public newsfeed
+    <div>
+      <form onsubmit="publishToNewsfeed()">
+        <input id="newsfeed_message" type="text">
+        <br/>
+        <button type="submit">Publish</button>
+      </form>
+    </div>
+    <div>
+      <ul id="newsfeed">
+      </ul>
+    </div>
+  </div>
+  <div style="border-style: solid; width: 49%; float: right">
+    $NOTE_ID's private notes
+    <div>
+      <form onsubmit="publishToNotes()">
+        <input id="note_message" type="text">
+        <br/>
+        <button type="submit">Publish</button>
+      </form>
+    </div>
+    <div>
+      <ul id="notes">
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
