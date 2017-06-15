@@ -1,39 +1,39 @@
 // @flow
 import url from 'url';
 import { Readable } from 'stream';
-import type {IncomingMessage} from 'http';
+import type { IncomingMessage } from 'http';
 import { App as PusherApp } from 'pusher-platform';
 
-import { READ_PERMISSION, WRITE_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
-import type { PermissionType } from './permissions';
+import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
+import type { ActionType } from './permissions';
 import { jsonToReadable } from './utils';
 import { ClientError } from './errors';
 
 const defaultHost = 'api-ceres.kube.pusherplatform.io';
-const feedIdRegex = /^[a-zA-Z0-9-]+$/;
+const pathRegex = /^feeds\/([a-zA-Z0-9-]+)\/items$/;
 
 type TokenWithRefresh = {
   token: string;
   refresh: number;
 };
 
-type Options = {
+export type Options = {
   host: string;
   serviceId: string;
   serviceKey: string;
-};
-
-type AuthRequestJSONBody = {
-  feed_id?: string;
-  type?: 'READ'|'WRITE';
 };
 
 export interface ServiceInterface {
   pusherApp: PusherApp;
   publish(feedId: string, items: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
-  authorize(req: IncomingMessage, hasPermission: (feedId: string, type: PermissionType) => bool): Promise<any>
+  authorizeFeed(req: IncomingMessage, hasPermission: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>,
+  authorizePath(req: IncomingMessage, hasPermission: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>
 };
+
+type IncomingMessageWithBody = IncomingMessage & {
+  body: any;
+}
 
 export default ({host, serviceId, serviceKey}: Options) => {
   const basePath = 'services/feeds/v1/feeds';
@@ -47,7 +47,7 @@ export default ({host, serviceId, serviceKey}: Options) => {
    * Token and expiration time for communication between server-pusher platform
    * @private
    */
-  let tokenWithExpirationTime: TokenWithRefresh;
+  let tokenWithExpirationTime: TokenWithRefresh = {};
 
   /**
    * This method manage token for http library and pusher platform communication
@@ -86,29 +86,6 @@ export default ({host, serviceId, serviceKey}: Options) => {
     })
   );
   
-  /**
-   * Excract body from incoming POST request to JSON
-   * @private
-   */
-  const parseJsonBodyFromRequest = async (req: IncomingMessage): Promise<AuthRequestJSONBody> => (
-    new Promise((resolve, reject) => {
-      let jsonString = '';
-      
-      req.on('data', (data) => {
-          jsonString += data;
-      });
-
-      req.on('end', () => {
-          try {
-            const json = JSON.parse(jsonString);
-            resolve(json);
-          } catch (err) {
-            reject(err);
-          }
-      });
-    })
-  );
-
   class Service implements ServiceInterface {
     pusherApp: typeof PusherApp;
 
@@ -121,34 +98,73 @@ export default ({host, serviceId, serviceKey}: Options) => {
     }
 
     publishBatch (feedId: string, items: Array<any>): Promise<any> {
-      return publish(feedId, items);
+      return publish(feedId, [items]);
     }
 
-    async authorize(
-      req: IncomingMessage,
-      hasPermission: (feedId: string, type: PermissionType) => bool
-    ): Promise<any> {
-      const requestBody = await parseJsonBodyFromRequest(req);
-      const feedId = requestBody.feed_id;
-      const type = requestBody.type;
-      
-      if (!feedId || !type) {
-        throw new ClientError('Must provide feed_id and type in the request body', 400);
+    async authorizeFeed(
+      req: IncomingMessageWithBody,
+      hasPermission: (action: ActionType, feedId: string) => Promise<bool> | bool
+    ) {
+      const body = req.body;
+      const path: string = req.body.path;
+      const action: ActionType = req.body.action;
+
+      if (!path || !action) {
+        throw new ClientError('Must provide "path" and "action" in the request body', 400);
       }
       
-      if (!feedId.match(feedIdRegex)) {
-        throw new ClientError(`Feed_id must match regex ${feedIdRegex.toString()}`, 400);
+      if (!path.match(pathRegex)) {
+        throw new ClientError(`Path must match regex ${pathRegex.toString()}`, 400);
       }
       
-      if (!clientPermissionTypes.includes(type)) {
+      if (!clientPermissionTypes.includes(action)) {
         throw new ClientError(`Type must be one of ${JSON.stringify(clientPermissionTypes)}`, 400);
       }
       
-      if (!hasPermission(feedId, type)) {
+      const feedId = path.match(pathRegex)[1];
+
+      if (!hasPermission(action, feedId)) {
         throw new ClientError('Forbidden', 403); 
       }
 
-      return this.pusherApp.authenticate(req, getFeedsPermissionClaims(feedId, type));
+      try {
+        const data = this.pusherApp.authenticate(req, getFeedsPermissionClaims(action, path));
+        return data;
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    async authorizePath(
+      req: IncomingMessageWithBody,
+      hasPermission: (action: ActionType, path: string) => Promise<bool> | bool
+    ): Promise<any> {
+      const body = req.body;
+      const path: string = req.body.path;
+      const action: ActionType = req.body.action;
+
+      if (!path || !action) {
+        throw new ClientError('Must provide "path" and "action" in the request body', 400);
+      }
+      
+      if (!path.match(pathRegex)) {
+        throw new ClientError(`Path must match regex ${pathRegex.toString()}`, 400);
+      }
+      
+      if (!clientPermissionTypes.includes(action)) {
+        throw new ClientError(`Type must be one of ${JSON.stringify(clientPermissionTypes)}`, 400);
+      }
+      
+      if (!hasPermission(action, path)) {
+        throw new ClientError('Forbidden', 403); 
+      }
+
+      try {
+        const data = this.pusherApp.authenticate(req, getFeedsPermissionClaims(action, path));
+        return data;
+      } catch (err) {
+        throw err;
+      }
     }
   }
 

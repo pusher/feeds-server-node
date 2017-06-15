@@ -1510,9 +1510,9 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-"pusher-platform@https://github.com/pusher/pusher-platform-nodejs.git#allow_custom_claims":
+"pusher-platform@https://github.com/pusher/pusher-platform-nodejs.git#authenticate_synchronously":
   version "0.2.0"
-  resolved "https://github.com/pusher/pusher-platform-nodejs.git#d37bb27d06deac577a9e793e07442bd918b1ddd3"
+  resolved "https://github.com/pusher/pusher-platform-nodejs.git#ddfb97942be4ea2c0aacd4d4792ce8fe5f92e73b"
   dependencies:
     "@types/es6-promise" "0.0.32"
     "@types/extend" "^2.0.0"

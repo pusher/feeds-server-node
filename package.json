@@ -1,6 +1,6 @@
 {
   "name": "pusher-feeds-server",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "main": "./pusher-feeds-server.js",
   "license": "MIT",
   "scripts": {
@@ -11,7 +11,8 @@
     "postinstall": "cd examples && npm run install-pkg"
   },
   "dependencies": {
-    "jsonwebtoken": "^7.4.1"
+    "jsonwebtoken": "^7.4.1",
+    "pusher-platform": "https://github.com/pusher/pusher-platform-nodejs.git#authenticate_synchronously"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

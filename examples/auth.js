@@ -25,6 +25,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Auth user and redirect to main page
+app.get('/', (req, res) => {
+  readFile(joinPath(process.cwd(), 'index.html'), 'utf8', (err, data) => {
+    res.type('html');
+    res.send(data);
+  });
+});
+
 app.get('/login', (req, res) => {
   req.session.userId = req.query.user_id;
   res.redirect(`/notes/${req.query.user_id}`);
@@ -32,6 +39,11 @@ app.get('/login', (req, res) => {
 
 // Render template with public and private feeds for logged user
 app.get('/notes/:note_id', (req, res) => {
+  if (!req.session.userId) {
+    res.redirect('/');
+    return;
+  }
+
   // Hacky templating to embed the user ID
   readFile(joinPath(process.cwd(), 'notes-template.html'), 'utf8', (err, data) => {
     res.type('html');
@@ -52,7 +64,7 @@ app.post('/notes/:user_id', (req, res) => {
   }
 
   feeds
-    .publish(feedId, [ req.body ])
+    .publish(feedId, req.body)
     .then(() => res.sendStatus(204))
     .catch(err => res.status(400).send(err));
 });
@@ -61,14 +73,19 @@ app.post('/notes/:user_id', (req, res) => {
 // Does not require any authe
 app.post('/newsfeed', (req, res) => {
   feeds
-    .publish('newsfeed', [ req.body ])
+    .publish('newsfeed', req.body)
     .then(data => res.sendStatus(204))
     .catch(err => res.status(400).send(err));
 });
 
 app.post('/feeds/tokens', (req, res) => {
-  const validateRequest = (feedId, type) => type === 'READ' && hasPermission(req.session.userId, feedId); 
-  feeds.authorize(req, res, {}, '');
+  const validateRequest = (action, feedId) => action === 'READ' && hasPermission(req.session.userId, feedId);
+
+  feeds.authorizeFeed(req, validateRequest)
+    .then(data => res.send(data))
+    .catch(err => {
+      res.status(400).send(`${err.name}: ${err.message}`) 
+    });
 });
 
 const port = process.env.PORT || 5000;
