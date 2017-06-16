@@ -8,3 +8,5 @@ export const jsonToReadable = (json: Object): Readable => {
   s.push(null);
   return s;
 };
+
+export const isFn = (candidate: any) => typeof candidate === 'function';

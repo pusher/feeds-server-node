@@ -14,7 +14,12 @@ const feeds = new Service({
 });
 
 function hasPermission(userId, feedId) {
-  return userId === 'big-brother' || feedId === `private-${userId}`;
+  return new Promise((resolve, reject) => {
+    if (userId === 'big-brother' || feedId === `private-${userId}`) {
+      return resolve(true);
+    }
+    reject(false);
+  });
 }
 
 const app = express();
@@ -79,12 +84,25 @@ app.post('/newsfeed', (req, res) => {
 });
 
 app.post('/feeds/tokens', (req, res) => {
-  const validateRequest = (action, feedId) => action === 'READ' && hasPermission(req.session.userId, feedId);
+  // const validateRequest = (action, feedId) => {
+  //   console.log('sync callback');
+  //   return action === 'READ'
+  // };
+
+  const validateRequest = (action, feedId) => (
+    new Promise((resolve, reject) => {
+      console.log('promise');
+      if (action === 'READD') {
+        return resolve(true);
+      }
+      reject(new Error('The database is down, so I was not able to do a fake call!'));
+    })
+  );
 
   feeds.authorizeFeed(req, validateRequest)
     .then(data => res.send(data))
     .catch(err => {
-      res.status(400).send(`${err.name}: ${err.message}`) 
+      res.status(400).send(`Catched - ${err.name}: ${err.message}`) 
     });
 });
 
