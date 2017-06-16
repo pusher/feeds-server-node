@@ -1,7 +1,7 @@
 {
   "name": "pusher-feeds-server",
   "version": "0.4.0",
-  "main": "./pusher-feeds-server.js",
+  "main": "./build/index.js",
   "license": "MIT",
   "scripts": {
     "build": "babel src -d build --source-maps",
