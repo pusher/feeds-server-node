@@ -1,66 +1,127 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+import { readFile } from 'fs';
+import {join as joinPath} from 'path';
 
-const http = require("http");
-const Feeds = require("../pusher-feeds-server");
+import express from 'express';
+import session from 'express-session';
+import bodyParser from 'body-parser';
 
-const hostname = "localhost";
-const port = 5000;
+import Service from '../src/index';
 
-const feeds = new Feeds({
-  appId: "test",
-  appKey: "the-id-bit:the-secret-bit"
+const feeds = new Service({
+  serviceId: 'auth-example-app',
+  serviceKey: 'the-id-bit:the-secret-bit',
+  host: 'api-staging-ceres.kube.pusherplatform.io'
 });
 
-// Does the user with the given ID have permission to perform operations of the
-// given type on the feed with the given ID?
-//
-// For the sake of example we work with the schema whereby the "admin" user has
-// READ access to all feeds, but everyone else has access only to the feed that
-// corresponds to their own ID.
-function hasPermission(userId, feedId, type) {
-  if (type != "READ") {
-    return false
-  }
-  if (userId === "admin") {
-    return true
-  }
-  return feedId === `private-${userId}`;
+function hasPermission(userId, feedId) {
+  return new Promise((resolve, reject) => {
+    if (userId === 'big-brother' || feedId === `private-${userId}`) {
+      return resolve(true);
+    }
+    reject(false);
+  });
 }
 
-const server = http.createServer((req, res) => {
-  // TODO write an example in express to reduce boilerplate
-  if (req.method != "GET" || req.url.split("?")[0] != "/feeds/tokens") {
-    res.statusCode = 404;
-    res.setHeader("content-type", "text/plain");
-    res.end("Not found");
-    return;
-  }
-  // Obviously we want this form an actual session, but just pretent for now
-  const session = { userId: "callum" };
-  // We don't require users to grant access based on userId, so the callback
-  // only takes feedId and type.
-  feeds.authorize(req, res, { userId: session.userId }, (feedId, type) => {
-    return hasPermission(session.userId, feedId, type);
+const app = express();
+
+app.use(express.static(joinPath(process.cwd(), 'static')));
+app.use(session({ secret: 'HvCYzkbSjv3hNUf3fetPChO7DNxNPuOB' }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// Auth user and redirect to main page
+app.get('/', (req, res) => {
+  readFile(joinPath(process.cwd(), 'index.html'), 'utf8', (err, data) => {
+    res.type('html');
+    res.send(data);
   });
 });
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/\n`);
+app.get('/login', (req, res) => {
+  req.session.userId = req.query.user_id;
+  res.redirect(`/notes/${req.query.user_id}`);
 });
 
-// Example requests:
-// 
-// $ curl 'http://localhost:5000/feeds/tokens?feed_id=private-callum&type=READ'
-//
-//   200 OK
-//   {"token":"...jwt..."}
-//
-// $ curl 'http://localhost:5000/feeds/tokens?feed_id=private-will&type=READ'
-//
-//   403 Forbidden
-//   Forbidden
-//
-// $ curl 'http://localhost:5000/feeds/tokens?feed_id=private-callum'
-//
-//   400 Bad Request
-//   Bad Request
+// Render template with public and private feeds for logged user
+app.get('/notes/:note_id', (req, res) => {
+  if (!req.session.userId) {
+    res.redirect('/');
+    return;
+  }
+
+  // Hacky templating to embed the user ID
+  readFile(joinPath(process.cwd(), 'notes-template.html'), 'utf8', (err, data) => {
+    res.type('html');
+    res.send(
+      data
+        .replace(/\$NOTE_ID/g, req.params.note_id)
+        .replace(/\$USER_ID/g, req.session.userId)
+    );
+  });
+});
+
+// Publish data into private feed
+app.post('/notes/:user_id', (req, res) => {
+  const feedId = `private-${req.params.user_id}`
+
+  if (!hasPermission(req.session.userId, feedId)) {
+    return res.sendStatus(401);
+  }
+
+  feeds
+    .publish(feedId, req.body)
+    .then(() => res.sendStatus(204))
+    .catch(err => res.status(400).send(err));
+});
+
+app.delete('/notes/:user_id', (req, res) => {
+  const feedId = `private-${req.params.user_id}`
+
+  if (!hasPermission(req.session.userId, feedId)) {
+    return res.sendStatus(401);
+  }
+
+  feeds
+    .delete(feedId)
+    .then(() => res.sendStatus(204))
+    .catch(err => res.status(400).send(err));
+});
+
+// Publis data into public feed
+// Does not require any auth
+app.post('/newsfeed', (req, res) => {
+  feeds
+    .publish('newsfeed', req.body)
+    .then(data => res.sendStatus(204))
+    .catch(err => res.status(400).send(err));
+});
+
+app.post('/feeds/tokens', (req, res) => {
+  // The callback passed to authorizeFeed can be synchronous or asynchronous.
+  // The commented out example below is syncrhonous, whereas the function passed
+  // in below is asynchronous.
+
+  // const validateRequest = (action, feedId) => {
+  //   console.log('sync callback');
+  //   return action === 'READ'
+  // };
+
+  const validateRequest = (action, feedId) => (
+    new Promise((resolve, reject) => {
+      if (action === 'READ') {
+        return resolve(true);
+      }
+      reject(new Error('The database is down, so I was not able to do a fake call!'));
+    })
+  );
+
+  feeds.authorizeFeed(req, validateRequest)
+    .then(data => res.send(data))
+    .catch(err => {
+      res.status(400).send(`Catched - ${err.name}: ${err.message}`)
+    });
+});
+
+const port = process.env.PORT || 5000;
+app.listen(port);
+console.log(`Listening on port ${port}`);
