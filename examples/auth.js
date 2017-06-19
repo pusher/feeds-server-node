@@ -74,6 +74,19 @@ app.post('/notes/:user_id', (req, res) => {
     .catch(err => res.status(400).send(err));
 });
 
+app.delete('/notes/:user_id', (req, res) => {
+  const feedId = `private-${req.params.user_id}`
+
+  if (!hasPermission(req.session.userId, feedId)) {
+    return res.sendStatus(401);
+  }
+
+  feeds
+    .delete(feedId)
+    .then(() => res.sendStatus(204))
+    .catch(err => res.status(400).send(err));
+});
+
 // Publis data into public feed
 // Does not require any auth
 app.post('/newsfeed', (req, res) => {
@@ -95,7 +108,6 @@ app.post('/feeds/tokens', (req, res) => {
 
   const validateRequest = (action, feedId) => (
     new Promise((resolve, reject) => {
-      console.log('promise');
       if (action === 'READ') {
         return resolve(true);
       }

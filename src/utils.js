@@ -9,4 +9,4 @@ export const jsonToReadable = (json: Object): Readable => {
   return s;
 };
 
-export const getCurrentTimeInSeconds = () => Math.floor(Date.now() / 1000);
+export const getCurrentTimeInSeconds = (): number => Math.floor(Date.now() / 1000);

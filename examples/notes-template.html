@@ -31,6 +31,19 @@ function publishToNotes() {
   document.getElementById("note_message").value = "";
 }
 
+function onDeleteNoteClick () {
+  const e = window.event;
+  e.preventDefault();
+
+  const xhr = new XMLHttpRequest();
+  xhr.addEventListener("load", (evt) => {
+    document.querySelector('#notes').innerHTML = '';
+  });
+  xhr.open("DELETE", "/notes/$NOTE_ID", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.send();
+}
+
 function formatTime(timestamp) {
   const t = new Date(timestamp * 1000);
   return `${t.getHours()}:${t.getMinutes()}`;
@@ -54,10 +67,11 @@ pusherFeeds.feed("private-$NOTE_ID").subscribe({
   tailSize: 10,
   onItem: ({ body: { created, data } }) => {
     const itemEl = document.createElement("li");
-    itemEl.textContent = `${formatTime(created)}: ${data.message}`;
+    itemEl.innerText = `${formatTime(created)}: ${data.message}`;
     document.getElementById("notes").prepend(itemEl);
   },
   onError: () => {
+    console.log('On Error');
     const errorEl = document.createElement("span");
     errorEl.textContent = "You are not authorized to see these notes!";
     document.getElementById("notes").replaceWith(errorEl);
@@ -89,6 +103,7 @@ pusherFeeds.feed("private-$NOTE_ID").subscribe({
         <input id="note_message" type="text">
         <br/>
         <button type="submit">Publish</button>
+        <button onclick="onDeleteNoteClick()">Delete all items</button>
       </form>
     </div>
     <div>
