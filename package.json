@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "jsonwebtoken": "^7.4.1",
-    "pusher-platform": "https://github.com/pusher/pusher-platform-nodejs.git#authenticate_synchronously"
+    "pusher-platform": "https://github.com/pusher/pusher-platform-nodejs.git#master"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

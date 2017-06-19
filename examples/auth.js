@@ -92,7 +92,7 @@ app.post('/feeds/tokens', (req, res) => {
   const validateRequest = (action, feedId) => (
     new Promise((resolve, reject) => {
       console.log('promise');
-      if (action === 'READD') {
+      if (action === 'READ') {
         return resolve(true);
       }
       reject(new Error('The database is down, so I was not able to do a fake call!'));

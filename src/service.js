@@ -6,15 +6,14 @@ import { App as PusherApp } from 'pusher-platform';
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';
-import { jsonToReadable, isFn } from './utils';
+import { jsonToReadable, getCurrentTimeInSeconds } from './utils';
 import { ClientError } from './errors';
 
-const defaultHost = 'api-ceres.kube.pusherplatform.io';
-const pathRegex = /^feeds\/([a-zA-Z0-9-]+)\/items$/;
+import { defaultHost, pathRegex, cacheExpiryTolerance } from './constants';
 
-type TokenWithRefresh = {
+type TokenWithExpiry = {
   token: string;
-  refresh: number;
+  expiresIn: number;
 };
 
 // FIXME - just hack around using body-parser
@@ -50,9 +49,9 @@ export default ({host, serviceId, serviceKey}: Options) => {
    * Token and expiration time for communication between server-pusher platform
    * @private
    */
-  let tokenWithExpirationTime: TokenWithRefresh = {
+  let tokenWithExpirationTime: TokenWithExpiry = {
     token: '',
-    refresh: 0
+    expiresIn: 0
   };
 
   /**
@@ -61,19 +60,20 @@ export default ({host, serviceId, serviceKey}: Options) => {
    */
   const getServerToken = (): string => {
     {
-      const {token, refresh} = tokenWithExpirationTime;
+      const {token, expiresIn} = tokenWithExpirationTime;
       // If token exists and is still valid just return it..
-      if (token && refresh < Math.floor(Date.now() / 1000)) {
+      if (token && expiresIn > getCurrentTimeInSeconds()) {
         return token;
-      }
+      } 
     }
     // Oterwise generate new token and it's expiration time
-    const {token, refresh} = pusherApp.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
+    const {token, expires_in} = pusherApp.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
 
     tokenWithExpirationTime = {
       token,
-      refresh
+      expiresIn: getCurrentTimeInSeconds() + expires_in - cacheExpiryTolerance
     };
+
     return token;
   };
 
@@ -112,7 +112,7 @@ export default ({host, serviceId, serviceKey}: Options) => {
       hasPermissionCallback: (action: ActionType, b: string) => Promise<bool> | bool,
       supplyFeedIdToCallback: bool = false
     ): Promise<bool> {
-      if (!isFn(hasPermissionCallback)) {
+      if (typeof hasPermissionCallback !== 'function') {
         throw new Error('HasPermission must be a function');
       }
 
