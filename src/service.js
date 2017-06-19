@@ -55,7 +55,8 @@ export default ({host, serviceId, serviceKey}: Options) => {
   };
 
   /**
-   * This method manage token for http library and pusher platform communication
+   * This method manages the token for http library and pusher platform
+   * communication
    * @private
    */
   const getServerToken = (): string => {
@@ -64,9 +65,9 @@ export default ({host, serviceId, serviceKey}: Options) => {
       // If token exists and is still valid just return it..
       if (token && expiresIn > getCurrentTimeInSeconds()) {
         return token;
-      } 
+      }
     }
-    // Oterwise generate new token and it's expiration time
+    // Otherwise generate new token and its expiration time
     const {token, expires_in} = pusherApp.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
 
     tokenWithExpirationTime = {
@@ -125,7 +126,7 @@ export default ({host, serviceId, serviceKey}: Options) => {
       if (!action || !path) {
         throw new ClientError('Must provide "action" and "path" in the request body');
       }
-      
+
       if (!clientPermissionTypes.includes(action)) {
         throw new ClientError(`Action must be one of ${JSON.stringify(clientPermissionTypes)}`);
       }

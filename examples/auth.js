@@ -75,7 +75,7 @@ app.post('/notes/:user_id', (req, res) => {
 });
 
 // Publis data into public feed
-// Does not require any authe
+// Does not require any auth
 app.post('/newsfeed', (req, res) => {
   feeds
     .publish('newsfeed', req.body)
@@ -84,6 +84,10 @@ app.post('/newsfeed', (req, res) => {
 });
 
 app.post('/feeds/tokens', (req, res) => {
+  // The callback passed to authorizeFeed can be synchronous or asynchronous.
+  // The commented out example below is syncrhonous, whereas the function passed
+  // in below is asynchronous.
+
   // const validateRequest = (action, feedId) => {
   //   console.log('sync callback');
   //   return action === 'READ'
@@ -102,7 +106,7 @@ app.post('/feeds/tokens', (req, res) => {
   feeds.authorizeFeed(req, validateRequest)
     .then(data => res.send(data))
     .catch(err => {
-      res.status(400).send(`Catched - ${err.name}: ${err.message}`) 
+      res.status(400).send(`Catched - ${err.name}: ${err.message}`)
     });
 });
 

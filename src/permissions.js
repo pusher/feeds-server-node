@@ -1,7 +1,7 @@
 // @flow
 export type ActionType = 'READ' | '*';
 
-// All possible permission for users
+// All possible permissions for users
 export const READ_PERMISSION = 'READ';
 export const ALL_PERMISSION = '*';
 
@@ -19,7 +19,7 @@ export type FeedsPermissionClaims = {
   }
 };
 
-// Generates claims object for in format for uderlying Pusher SDK.
+// Generates claims object in the format required by the underlying Pusher SDK.
 export const getFeedsPermissionClaims = (action: ActionType, path: string): FeedsPermissionClaims => {
   return {
     serviceClaims: {
