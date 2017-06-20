@@ -123,7 +123,7 @@ export default ({host, serviceId, serviceKey}: Options) => {
       throw new ClientError('Must provide "action" and "path" in the request body');
     }
 
-    if (!clientPermissionTypes.includes(action)) {
+    if (clientPermissionTypes.indexOf(action)) {
       throw new ClientError(`Action must be one of ${JSON.stringify(clientPermissionTypes)}`);
     }
 
