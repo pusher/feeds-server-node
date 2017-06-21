@@ -37,7 +37,7 @@ interface FeedsInterface {
   authorizePath(req: IncomingMessageWithBody, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({cluster, serviceId, serviceKey}: Options) => {
+export default ({cluster, serviceId, serviceKey}: Options = {}) => {
   const basePath = 'services/feeds/v1/feeds';
   const pusherService = new PusherService({
     cluster: cluster || defaultCluster,
@@ -164,14 +164,14 @@ export default ({cluster, serviceId, serviceKey}: Options) => {
     authorizeFeed(
       req: IncomingMessageWithBody,
       hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool
-    ): Promise<any> {
+    ): Promise<Object> {
       return authorize(req, hasPermissionCallback, true);
     }
 
     authorizePath(
       req: IncomingMessageWithBody,
       hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool
-    ): Promise<any> {
+    ): Promise<Object> {
       return authorize(req, hasPermissionCallback);
     }
   }

@@ -23,28 +23,28 @@ $ npm install pusher-feeds-server --save
 #### ES6
 ```js
 // The default export is a Feeds class.
-import PusherFeeds from 'pusher-feeds-server';
+import Feeds from 'pusher-feeds-server';
 ```
 
 #### ES5 (CommonJS)
 ```js
 // The default export is a Feeds class.
-var PusherFeeds = require('pusher-feeds-server').Feeds;
+var Feeds = require('pusher-feeds-server').Feeds;
 ```
 
 ### Using Library
 ```js
 // Create instance of Feeds class
-const pusherFeeds = new PusherFeeds({serviceId: your_service_id, serviceKey: your_service_key});
+const feeds = new PusherFeeds({serviceId: your_service_id, serviceKey: your_service_key});
 
 // Publish item to feed
-pusherFeeds
+feeds
   .publish(feed_id, {message: 'Hello World!'})
   .then(() => console.log('Succes!'))
   .catch((err) => console.log(err));
 
 // Publish multiple items to feed
-pusherFeeds
+feeds
   .publishBatch(feed_id, [{message: 'Hello A!'}, {message: 'Hello B!'}])
   .then(() => console.log('Succes!'))
   .catch((err) => console.log(err));
@@ -52,13 +52,13 @@ pusherFeeds
 // .... Init express js server
 // Register auth endpoint
 app.post('/feeds/tokens', (req, res) => {
-  // Define hasPermission to be used in authorizedFeed function
+  // Define hasPermission to be used in authorizeFeed function
   const hasPermission = (action, feedId) => (
     db.find(req.session.userId)
       .then(userId => userId === 'abcd')
   );
 
-  // Authorized user with request payload and hasPermission callback.
+  // Authorize user with request payload and hasPermission callback.
   feeds.authorizeFeed(req, hasPermission)
     .then(data => res.send(data))
     .catch(err => {
@@ -67,9 +67,18 @@ app.post('/feeds/tokens', (req, res) => {
 });
 ```
 
+considering that we have the `Express` http server running on `http://localhost:5000` then we can test the auth endpoint with `curl`:
+```sh
+curl -X POST \
+-d "action"="READ" \
+-d "path"="feeds/private-my-feed-name/items" \
+-d "grant_type"="client_credentials" \
+http://localhost:5000/feeds/tokens
+```
+
 ## Reference
 
-Please note that reference is annotated with statically typed dialect like [Flow](https://flow.org/)
+Please note that the reference is annotated with a statically typed dialect like [Flow](https://flow.org/)
 
 ### `Feeds` class
 
@@ -78,41 +87,41 @@ Takes a single options object with the following properties.
 - `serviceId`:<i>string</i> [required] your service ID; get this from [your
   dashboard](https://dash.pusher.com)
 
-- `serviceKey`:<i>string</i> [required] your service KEY; get this from [your
+- `serviceKey`:<i>string</i> [required] your service key; get this from [your
   dashboard](https://dash.pusher.com)
 
 - `cluster`:<i>string</i> [optional] the host that your service lives on, defaults to
-  `api-ceres.kube.pusherplatform.io`
+  `api-ceres.pusherplatform.io`
 
-### `pusherFeeds.publish(feedId: string, item: any): Promise<any>`
+### `feeds.publish(feedId: string, item: any): Promise<any>`
 
 Publish single item into feed.
 
-### `pusherFeeds.publishBatch(feedId: string, items: Array<any>): Promise<any>`
+### `feeds.publishBatch(feedId: string, items: Array<any>): Promise<any>`
 
 Publish multiple items into feed.
 
-### `delete(feedId: string): Promise<any>;`
+### `feeds.delete(feedId: string): Promise<any>;`
 
 Delete all items in selected feed.
 
-### `authorizeFeed(req: http.IncomingMessage, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>;`
+### `feeds.authorizeFeed(req: http.IncomingMessage, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<Object>;`
 
-This method allows you to authenticate/authorize your clients for certain feed. Please see auth process [diagram](https://pusher.com/docs/authenticating_users#authentication_process) and [example](https://github.com/pusher/feeds-auth-example-app) how to implement this method with collaboration with one of our client side libraries.
+This method allows you to authorize your clients for access to a certain feed. Please see auth process [diagram](https://pusher.com/docs/authenticating_users#authentication_process) and [example](https://github.com/pusher/feeds-auth-example-app) how to implement this method with collaboration with one of our client side libraries.
 
-- `req` param which is object of type `http.IncomingMessage`  with `body` property containing POST request payload (You can use [body-parser](https://github.com/expressjs/body-parser) to parse POST request body for you). The body must have format listed below:
+- `req` param which is an object of type `http.IncomingMessage`  with `body` property containing POST request payload (You can use [body-parser](https://github.com/expressjs/body-parser) to parse the POST request body for you). The body must have the following format:
 
 ```js
-  {
-    path: your_path,
-    action: your_action_type,
-    grant_type: your_grant_type
-  }
+{
+  path: your_path,
+  action: your_action_type,
+  grant_type: your_grant_type
+}
 ```
 
-- `hasPermissionCallback` paramater allows you to handle scenarious like you custom session handling. This callback is always called during auth process to detect wheter or not the token can be generated. You can use just `syncronous` callback or `asyncronous` by returning Promise from it.
+- `hasPermissionCallback` parameter allows you to grant or deny permission to access a feed based on any information you have in scope (e.g. session data). It should either return a `bool`, or a `promise` of one. See the [auth-docs](https://pusher.com/docs/authenticating_users#authentication_process) for more details.
 
-Returns a Promise with `authResponse` object with properties listed below which then can be use for client authentication/authorization.
+Returns a `Promise` with an `authResponse` object with the properties listed below which can then be used for client authorization.
 
 ```js
 {
@@ -122,6 +131,30 @@ Returns a Promise with `authResponse` object with properties listed below which 
   refresh_token: refresh_token
 }
 ```
+
+### `Error` handling
+
+Since all the public methods on `Feeds` class returns `Promise` you should always call `.catch()` on it to handle `Error` properly. `pusher-feeds-server` library is using some custom Errors which extends standart JS `Error` object. You can import them to your project if would like to use them.
+
+### Importing
+
+#### ES6
+```js
+import Feeds, {
+    UnsupportedGrantTypeError,
+    InvalidGrantTypeError,
+    ClientError
+  } from 'pusher-feeds-server';
+```
+
+#### ES5 (CommonJS)
+```js
+var Feeds = require('pusher-feeds-server').Feeds;
+var UnsupportedGrantTypeError = require('pusher-feeds-server').UnsupportedGrantTypeError;
+var InvalidGrantTypeError = require('pusher-feeds-server').InvalidGrantTypeError;
+var ClientError = require('pusher-feeds-server').ClientError;
+```
+
 # Development/Contribution
 <strong>src/</strong> - library code</br>
 <strong>examples/</strong> - demonstration app. Also useful for testing during development</br>
