@@ -5,12 +5,12 @@ import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 
-import Service from '../src/index';
+import Feeds from '../src/index';
 
-const feeds = new Service({
+const feeds = new Feeds({
   serviceId: 'auth-example-app',
   serviceKey: 'the-id-bit:the-secret-bit',
-  host: 'api-staging-ceres.kube.pusherplatform.io'
+  cluster: 'api-staging-ceres.kube.pusherplatform.io'
 });
 
 function hasPermission(userId, feedId) {
