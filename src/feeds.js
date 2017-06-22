@@ -2,7 +2,7 @@
 import url from 'url';
 import { Readable } from 'stream';
 import type { IncomingMessage } from 'http';
-import { App as PusherService } from 'pusher-platform';
+import { App as PusherService } from 'pusher-platform-node';
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';

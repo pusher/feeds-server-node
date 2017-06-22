@@ -939,7 +939,7 @@ expand-range@^1.8.1:
   dependencies:
     fill-range "^2.1.0"
 
-extend@^2.0.0:
+extend@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/extend/-/extend-2.0.1.tgz#1ee8010689e7395ff9448241c98652bc759a8260"
 
@@ -1283,7 +1283,7 @@ jsonify@~0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/jsonify/-/jsonify-0.0.0.tgz#2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
 
-jsonwebtoken@^7.2.0, jsonwebtoken@^7.4.1:
+jsonwebtoken@^7.4.1:
   version "7.4.1"
   resolved "https://registry.yarnpkg.com/jsonwebtoken/-/jsonwebtoken-7.4.1.tgz#7ca324f5215f8be039cd35a6c45bb8cb74a448fb"
   dependencies:
@@ -1516,15 +1516,15 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-"pusher-platform@https://github.com/pusher/pusher-platform-nodejs.git#master":
+pusher-platform-node@^0.3.0:
   version "0.3.0"
-  resolved "https://github.com/pusher/pusher-platform-nodejs.git#93acaa30d974a8f8abcbe1008ff76441543629a4"
+  resolved "https://registry.yarnpkg.com/pusher-platform-node/-/pusher-platform-node-0.3.0.tgz#637b454d7550e86bf45daececf9d4802b945de95"
   dependencies:
     "@types/es6-promise" "0.0.32"
     "@types/extend" "^2.0.0"
     "@types/jsonwebtoken" "^7.2.0"
-    extend "^2.0.0"
-    jsonwebtoken "^7.2.0"
+    extend "^2.0.1"
+    jsonwebtoken "^7.4.1"
 
 qs@~6.4.0:
   version "6.4.0"

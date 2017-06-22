@@ -19,16 +19,16 @@ fi
 
 next_ref="v$next_version"
 
-# git add -u
+git add -u
 
 npm run build
 npm test
 
 update_version 'package.json' $next_version
 
-# git commit -am "release $next_version"
-# git tag $next_version
+git commit -am "release $next_version"
+git tag $next_version
 
-# git push --tags
+git push --tags
 
-# npm publish
+npm publish

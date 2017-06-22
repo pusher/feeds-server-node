@@ -1,5 +1,5 @@
 // @flow
-export {UnsupportedGrantTypeError, InvalidGrantTypeError} from 'pusher-platform';
+export {UnsupportedGrantTypeError, InvalidGrantTypeError} from 'pusher-platform-node';
 
 export * from './errors';
 export {default as Feeds} from './feeds';
