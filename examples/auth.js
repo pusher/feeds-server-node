@@ -115,7 +115,7 @@ app.post('/feeds/tokens', (req, res) => {
     })
   );
 
-  feeds.authorizeFeed(req, validateRequest)
+  feeds.authorizeFeed(req.body, validateRequest)
     .then(data => res.send(data))
     .catch(err => {
       res.status(400).send(`Catched - ${err.name}: ${err.message}`)
