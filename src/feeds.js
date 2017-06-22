@@ -106,8 +106,7 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
 
   const authorize = async (
     req: IncomingMessageWithBody,
-    hasPermissionCallback: (action: ActionType, b: string) => Promise<bool> | bool,
-    supplyFeedIdToCallback: bool = false
+    hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool
   ): Promise<bool> => {
     if (typeof hasPermissionCallback !== 'function') {
       throw new Error('HasPermission must be a function');
@@ -127,13 +126,7 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
       throw new ClientError(`Action must be one of ${JSON.stringify(clientPermissionTypes)}`);
     }
 
-    const matchedPath = path.match(pathRegex);
-
-    if (!matchedPath) {
-      throw new ClientError(`Path must match regex ${pathRegex.toString()}`);
-    }
-
-    const hasPermission = await hasPermissionCallback(action, (supplyFeedIdToCallback) ? matchedPath[1] : path);
+    const hasPermission = await hasPermissionCallback(action, path);
 
     if (!hasPermission) {
       throw new ClientError('Forbidden');
@@ -165,7 +158,21 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
       req: IncomingMessageWithBody,
       hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool
     ): Promise<Object> {
-      return authorize(req, hasPermissionCallback, true);
+      if (typeof hasPermissionCallback !== 'function') {
+        throw new Error('HasPermission must be a function');
+      }
+
+      const wrappedHasPermissionCallback = (action, path) => {
+        const matchedPath = path.match(pathRegex);
+
+        if (!matchedPath) {
+          throw new ClientError(`Path must match regex ${pathRegex.toString()}`);
+        }
+        
+        return hasPermissionCallback(action, matchedPath[1]);
+      };
+
+      return authorize(req, wrappedHasPermissionCallback);
     }
 
     authorizePath(
