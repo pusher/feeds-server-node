@@ -16,10 +16,10 @@ type TokenWithExpiry = {
   expiresIn: number;
 };
 
-// FIXME - just hack around using body-parser
-// We should find better way how to extract data from request
-type IncomingMessageWithBody = {
-  body: any;
+type AuthorizePayload = {
+  path: string;
+  action: ActionType;
+  grant_type: string;
 };
 
 type Options = {
@@ -33,8 +33,8 @@ interface FeedsInterface {
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
-  authorizeFeed(req: IncomingMessageWithBody, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>;
-  authorizePath(req: IncomingMessageWithBody, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
+  authorizeFeed(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>;
+  authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
 export default ({cluster, serviceId, serviceKey}: Options = {}) => {
@@ -105,18 +105,19 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
   );
 
   const authorize = async (
-    req: IncomingMessageWithBody,
-    hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool
-  ): Promise<bool> => {
+    payload: AuthorizePayload,
+    hasPermissionCallback: (action: ActionType, b: string) => Promise<bool> | bool,
+    supplyFeedIdToCallback: bool = false
+  ): Promise<any> => {
     if (typeof hasPermissionCallback !== 'function') {
       throw new Error('HasPermission must be a function');
     }
 
-    if (!req.body) {
-      throw new ClientError('http.IncomingMessage must be provided with body of post request');
+    if (!payload) {
+      throw new ClientError('Payload must be provided');
     }
 
-    const { action, path }: {action: ActionType; path: string; } = req.body;
+    const { action, path }: {action: ActionType; path: string; } = payload;
 
     if (!action || !path) {
       throw new ClientError('Must provide "action" and "path" in the request body');
@@ -131,8 +132,8 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
     if (!hasPermission) {
       throw new ClientError('Forbidden');
     }
-
-    return pusherService.authenticate(req, getFeedsPermissionClaims(action, path));
+    
+    return pusherService.authenticate({ body: payload }, getFeedsPermissionClaims(action, path));
   };
 
   class Feeds implements FeedsInterface {
@@ -155,7 +156,7 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
     }
 
     authorizeFeed(
-      req: IncomingMessageWithBody,
+      payload: AuthorizePayload,
       hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool
     ): Promise<Object> {
       if (typeof hasPermissionCallback !== 'function') {
@@ -172,14 +173,14 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
         return hasPermissionCallback(action, matchedPath[1]);
       };
 
-      return authorize(req, wrappedHasPermissionCallback);
+      return authorize(payload, wrappedHasPermissionCallback);
     }
 
     authorizePath(
-      req: IncomingMessageWithBody,
+      payload: AuthorizePayload,
       hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool
     ): Promise<Object> {
-      return authorize(req, hasPermissionCallback);
+      return authorize(payload, hasPermissionCallback);
     }
   }
 

@@ -105,18 +105,18 @@ Publish multiple items into feed.
 
 Delete all items in selected feed.
 
-### `feeds.authorizeFeed(req: http.IncomingMessage, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<Object>;`
+### `feeds.authorizeFeed(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<Object>;`
 
 This method allows you to authorize your clients for access to a certain feed. Please see auth process [diagram](https://pusher.com/docs/authenticating_users#authentication_process) and [example](https://github.com/pusher/feeds-auth-example-app) how to implement this method with collaboration with one of our client side libraries.
 
-- `req` param which is an object of type `http.IncomingMessage`  with `body` property containing POST request payload (You can use [body-parser](https://github.com/expressjs/body-parser) to parse the POST request body for you). The body must have the following format:
+- `payload` param is essentially POST request payload (or body) object of type `AuthorizePayload` (You can use [body-parser](https://github.com/expressjs/body-parser) to parse the POST request body for you). The object must have the following format: (Please note that if you using one of our client libraries they will handle this format for you)
 
 ```js
-{
-  path: your_path,
-  action: your_action_type,
-  grant_type: your_grant_type
-}
+type AuthorizePayload = {
+  path: string;
+  action: string;
+  grant_type: string;
+};
 ```
 
 - `hasPermissionCallback` parameter allows you to grant or deny permission to access a feed based on any information you have in scope (e.g. session data). It should either return a `bool`, or a `promise` of one. See the [auth-docs](https://pusher.com/docs/authenticating_users#authentication_process) for more details.
