@@ -9,7 +9,7 @@ import type { ActionType } from './permissions';
 import { jsonToReadable, getCurrentTimeInSeconds } from './utils';
 import { ClientError } from './errors';
 
-import { defaultHost, pathRegex, cacheExpiryTolerance } from './constants';
+import { defaultCluster, pathRegex, cacheExpiryTolerance } from './constants';
 
 type TokenWithExpiry = {
   token: string;
@@ -23,24 +23,24 @@ type IncomingMessageWithBody = {
 };
 
 type Options = {
-  host: string;
+  cluster?: string;
   serviceId: string;
   serviceKey: string;
 };
 
-interface ServiceInterface {
-  pusherApp: PusherService;
-  publish(feedId: string, items: any): Promise<any>;
+interface FeedsInterface {
+  pusherService: PusherService;
+  publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
   authorizeFeed(req: IncomingMessageWithBody, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>;
   authorizePath(req: IncomingMessageWithBody, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({host, serviceId, serviceKey}: Options) => {
+export default ({cluster, serviceId, serviceKey}: Options = {}) => {
   const basePath = 'services/feeds/v1/feeds';
   const pusherService = new PusherService({
-    cluster: host || defaultHost,
+    cluster: cluster || defaultCluster,
     appId: serviceId,
     appKey: serviceKey,
   });
@@ -135,11 +135,11 @@ export default ({host, serviceId, serviceKey}: Options) => {
     return pusherService.authenticate(req, getFeedsPermissionClaims(action, path));
   };
 
-  class Service implements ServiceInterface {
-    pusherApp: typeof pusherService;
+  class Feeds implements FeedsInterface {
+    pusherService: typeof PusherService;
 
     constructor(pusherApp: typeof pusherService) {
-      this.pusherApp = pusherApp;
+      this.pusherService = pusherApp;
     }
 
     publish (feedId: string, item: any): Promise<any> {
@@ -157,7 +157,7 @@ export default ({host, serviceId, serviceKey}: Options) => {
     authorizeFeed(
       req: IncomingMessageWithBody,
       hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool
-    ): Promise<any> {
+    ): Promise<Object> {
       if (typeof hasPermissionCallback !== 'function') {
         throw new Error('HasPermission must be a function');
       }
@@ -178,10 +178,10 @@ export default ({host, serviceId, serviceKey}: Options) => {
     authorizePath(
       req: IncomingMessageWithBody,
       hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool
-    ): Promise<any> {
+    ): Promise<Object> {
       return authorize(req, hasPermissionCallback);
     }
   }
 
-  return new Service(pusherService);
+  return new Feeds(pusherService);
 };
