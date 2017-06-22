@@ -112,11 +112,9 @@ This method allows you to authorize your clients for access to a certain feed. P
 - `payload` param is essentially POST request payload (or body) object of type `AuthorizePayload` (You can use [body-parser](https://github.com/expressjs/body-parser) to parse the POST request body for you). The object must have the following format: (Please note that if you using one of our client libraries they will handle this format for you)
 
 ```js
-type ActionType = 'READ' | '*';
-
 type AuthorizePayload = {
   path: string;
-  action: ActionType;
+  action: string;
   grant_type: string;
 };
 ```
