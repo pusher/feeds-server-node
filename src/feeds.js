@@ -33,8 +33,8 @@ interface FeedsInterface {
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
-  authorizeFeed(req: AuthorizePayload, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>;
-  authorizePath(req: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
+  authorizeFeed(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, feedId: string) => Promise<bool> | bool): Promise<any>;
+  authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
 export default ({cluster, serviceId, serviceKey}: Options = {}) => {
@@ -114,7 +114,7 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
     }
 
     if (!payload) {
-      throw new ClientError('http.IncomingMessage must be provided with body of post request');
+      throw new ClientError('Payload must be provided');
     }
 
     const { action, path }: {action: ActionType; path: string; } = payload;
