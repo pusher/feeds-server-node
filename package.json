@@ -7,8 +7,7 @@
     "build": "babel src -d build --source-maps",
     "test": "echo Testing...\n",
     "install-pkg": "if type yarn &> /dev/null; then yarn; else npm i; fi",
-    "example": "cd examples && npm start",
-    "postinstall": "cd examples && npm run install-pkg"
+    "example": "cd examples && npm start"
   },
   "dependencies": {
     "babel-runtime": "^6.23.0",
