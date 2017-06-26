@@ -10,7 +10,7 @@ import Feeds from '../src/index';
 const feeds = new Feeds({
   serviceId: 'auth-example-app',
   serviceKey: 'the-id-bit:the-secret-bit',
-  cluster: 'api-staging-ceres.kube.pusherplatform.io'
+  cluster: 'api-staging-ceres.pusherplatform.io'
 });
 
 function hasPermission(userId, feedId) {
