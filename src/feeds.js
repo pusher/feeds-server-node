@@ -2,14 +2,14 @@
 import url from 'url';
 import { Readable } from 'stream';
 import type { IncomingMessage } from 'http';
-import { App as PusherService } from 'pusher-platform-node';
+import { App as PusherService, TOKEN_LEEWAY } from 'pusher-platform-node';
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';
 import { jsonToReadable, getCurrentTimeInSeconds } from './utils';
 import { ClientError } from './errors';
 
-import { defaultCluster, pathRegex, cacheExpiryTolerance } from './constants';
+import { defaultCluster, pathRegex } from './constants';
 
 type TokenWithExpiry = {
   token: string;
@@ -69,10 +69,10 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
     }
     // Otherwise generate new token and its expiration time
     const {token, expires_in} = pusherService.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
-
+    
     tokenWithExpirationTime = {
       token,
-      expiresIn: getCurrentTimeInSeconds() + expires_in - cacheExpiryTolerance
+      expiresIn: getCurrentTimeInSeconds() + expires_in - TOKEN_LEEWAY
     };
 
     return token;

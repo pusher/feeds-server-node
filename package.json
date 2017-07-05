@@ -1,6 +1,6 @@
 {
   "name": "pusher-feeds-server",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "main": "./build/index.js",
   "license": "MIT",
   "scripts": {
@@ -12,7 +12,7 @@
   "dependencies": {
     "babel-runtime": "^6.23.0",
     "jsonwebtoken": "^7.4.1",
-    "pusher-platform-node": "^0.3.0"
+    "pusher-platform-node": "^0.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
