@@ -87,6 +87,9 @@ Takes a single options object with the following properties.
 - `instance`:<i>string</i> [required] your instance ID; get this from [your
   dashboard](https://dash.pusher.com)
 
+- `key`:<i>string</i> [required] your instance ID; get this from [your
+  dashboard](https://dash.pusher.com)
+
 ### `feeds.publish(feedId: string, item: any): Promise<any>`
 
 Publish single item into feed.

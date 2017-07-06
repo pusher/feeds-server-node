@@ -9,7 +9,7 @@ import type { ActionType } from './permissions';
 import { jsonToReadable, getCurrentTimeInSeconds } from './utils';
 import { ClientError } from './errors';
 
-import { defaultCluster, pathRegex } from './constants';
+import { pathRegex } from './constants';
 
 type TokenWithExpiry = {
   token: string;
@@ -24,7 +24,8 @@ type AuthorizePayload = {
 
 type Options = {
   instance: string;
-  host: string;
+  key: string;
+  host?: string;
 };
 
 interface FeedsInterface {
@@ -36,9 +37,14 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({instance, host}: Options = {}) => {
-  const basePath = 'services/feeds/v1/feeds';
-  const pusherService = new PusherService({ instance, host });
+export default ({instance, key, host}: Options = {}) => {
+  const pusherService = new PusherService({
+    instance,
+    key,
+    host,
+    serviceVersion: 'v1',
+    serviceName: 'feeds'
+  });
 
   /**
    * Token and expiration time for communication between server-pusher platform
@@ -79,7 +85,7 @@ export default ({instance, host}: Options = {}) => {
   const publish = (feedId: string, items: Array<any>): Promise<any> => (
     pusherService.request({
       method: 'POST',
-      path: `${basePath}/${feedId}/items`,
+      path: `/${feedId}/items`,
       jwt: getServerToken(),
       headers: {
         'Content-Type': 'application/json'
@@ -94,7 +100,7 @@ export default ({instance, host}: Options = {}) => {
   const deleteItems = (feedId): Promise<any> => (
     pusherService.request({
       method: 'DELETE',
-      path: `${basePath}/${feedId}/items`,
+      path: `/${feedId}/items`,
       jwt: getServerToken()
     })
   );
