@@ -23,9 +23,8 @@ type AuthorizePayload = {
 };
 
 type Options = {
-  cluster?: string;
-  serviceId: string;
-  serviceKey: string;
+  instance: string;
+  host: string;
 };
 
 interface FeedsInterface {
@@ -37,13 +36,9 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({cluster, serviceId, serviceKey}: Options = {}) => {
+export default ({instance, host}: Options = {}) => {
   const basePath = 'services/feeds/v1/feeds';
-  const pusherService = new PusherService({
-    cluster: cluster || defaultCluster,
-    appId: serviceId,
-    appKey: serviceKey,
-  });
+  const pusherService = new PusherService({ instance, host });
 
   /**
    * Token and expiration time for communication between server-pusher platform

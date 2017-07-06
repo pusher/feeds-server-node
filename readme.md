@@ -35,7 +35,7 @@ var Feeds = require('pusher-feeds-server');
 ### Using Library
 ```js
 // Create instance of Feeds class
-const feeds = new PusherFeeds({serviceId: your_service_id, serviceKey: your_service_key});
+const feeds = new PusherFeeds({instance: your_instance_id});
 
 // Publish item to feed
 feeds
@@ -84,14 +84,8 @@ Please note that the reference is annotated with a statically typed dialect like
 
 Takes a single options object with the following properties.
 
-- `serviceId`:<i>string</i> [required] your service ID; get this from [your
+- `instance`:<i>string</i> [required] your instance ID; get this from [your
   dashboard](https://dash.pusher.com)
-
-- `serviceKey`:<i>string</i> [required] your service key; get this from [your
-  dashboard](https://dash.pusher.com)
-
-- `cluster`:<i>string</i> [optional] the host that your service lives on, defaults to
-  `api-ceres.pusherplatform.io`
 
 ### `feeds.publish(feedId: string, item: any): Promise<any>`
 
