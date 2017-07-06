@@ -35,7 +35,7 @@ var Feeds = require('pusher-feeds-server');
 ### Using Library
 ```js
 // Create instance of Feeds class
-const feeds = new PusherFeeds({instance: your_instance_id});
+const feeds = new PusherFeeds({instance: your_instance_id, key: your_key});
 
 // Publish item to feed
 feeds
