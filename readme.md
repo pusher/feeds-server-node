@@ -29,7 +29,7 @@ import Feeds from 'pusher-feeds-server';
 #### ES5 (CommonJS)
 ```js
 // The default export is a Feeds class.
-var Feeds = require('pusher-feeds-server').Feeds;
+var Feeds = require('pusher-feeds-server');
 ```
 
 ### Using Library
@@ -149,10 +149,10 @@ import Feeds, {
 
 #### ES5 (CommonJS)
 ```js
-var Feeds = require('pusher-feeds-server').Feeds;
-var UnsupportedGrantTypeError = require('pusher-feeds-server').UnsupportedGrantTypeError;
-var InvalidGrantTypeError = require('pusher-feeds-server').InvalidGrantTypeError;
-var ClientError = require('pusher-feeds-server').ClientError;
+var Feeds = require('pusher-feeds-server');
+var UnsupportedGrantTypeError = Feeds.UnsupportedGrantTypeError;
+var InvalidGrantTypeError = Feeds.InvalidGrantTypeError;
+var ClientError = Feeds.ClientError;
 ```
 
 # Development/Contribution

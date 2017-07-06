@@ -1,6 +1,8 @@
-// @flow
-export {UnsupportedGrantTypeError, InvalidGrantTypeError} from 'pusher-platform-node';
+import Feeds from './feeds';
+import { ClientError } from './errors';
+import {UnsupportedGrantTypeError, InvalidGrantTypeError} from 'pusher-platform-node';
 
-export * from './errors';
-export {default as Feeds} from './feeds';
-export {default as default} from './feeds';
+module.exports = Feeds;
+module.exports.UnsupportedGrantTypeError = UnsupportedGrantTypeError;
+module.exports.InvalidGrantTypeError = InvalidGrantTypeError;
+module.exports.ClientError = ClientError;
