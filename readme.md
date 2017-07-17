@@ -33,7 +33,7 @@ dashboard](https://dash.pusher.com)
 ### Example
 
 ```js
-const feeds = new PusherFeeds({instance: your_instance_id, key: your_key});
+const feeds = new Feeds({instance: your_instance_id, key: your_key});
 ```
 
 ## Publish single item to a feed
