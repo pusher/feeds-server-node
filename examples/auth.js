@@ -8,9 +8,8 @@ import bodyParser from 'body-parser';
 import Feeds from '../src/index';
 
 const feeds = new Feeds({
-  serviceId: 'auth-example-app',
-  serviceKey: 'the-id-bit:the-secret-bit',
-  cluster: 'api-ceres.pusherplatform.io'
+  instance: '',
+  key: ''
 });
 
 function hasPermission(userId, feedId) {
@@ -93,7 +92,9 @@ app.post('/newsfeed', (req, res) => {
   feeds
     .publish('newsfeed', req.body)
     .then(data => res.sendStatus(204))
-    .catch(err => res.status(400).send(err));
+    .catch(err => {
+      res.status(400).send(err)
+    });
 });
 
 app.post('/feeds/tokens', (req, res) => {

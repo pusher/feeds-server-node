@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>1984 Notes</title>
-  <script src="/client.js"></script>
+  <script src="https://unpkg.com/pusher-feeds-client"></script>
   <script>
 function publishToNewsfeed() {
   const e = window.event.preventDefault();
@@ -49,12 +49,11 @@ function formatTime(timestamp) {
   return `${t.getHours()}:${t.getMinutes()}`;
 }
 
-const pusherFeeds = new PusherFeeds({
-  cluster: "api-ceres.pusherplatform.io",
-  serviceId: "auth-example-app",
+const feeds = new Feeds({
+  instance: ''
 });
-pusherFeeds.feed("newsfeed").subscribe({
-  tailSize: 10,
+feeds.feed("newsfeed").subscribe({
+  previousItems: 10,
   onItem: ({ body: { created, data } }) => {
     const itemEl = document.createElement("li");
     itemEl.textContent =
@@ -63,8 +62,8 @@ pusherFeeds.feed("newsfeed").subscribe({
   }
 });
 
-pusherFeeds.feed("private-$NOTE_ID").subscribe({
-  tailSize: 10,
+feeds.feed("private-$NOTE_ID").subscribe({
+  previousItems: 10,
   onItem: ({ body: { created, data } }) => {
     const itemEl = document.createElement("li");
     itemEl.innerText = `${formatTime(created)}: ${data.message}`;
