@@ -228,4 +228,3 @@ var UnsupportedGrantTypeError = Feeds.UnsupportedGrantTypeError;
 var InvalidGrantTypeError = Feeds.InvalidGrantTypeError;
 var ClientError = Feeds.ClientError;
 ```
-
