@@ -24,19 +24,16 @@ var Feeds = require('pusher-feeds-server');
 
 Constructor `Feeds` takes a single options object with the following properties:
 
-* `serviceId`:_string_ [required] your service ID; get this from [your
-  dashboard](https://dash.pusher.com)
+* `instance`:<i>string</i> [required] your instance ID; get this from [your
+dashboard](https://dash.pusher.com)
 
-* `serviceKey`:_string_ [required] your service key; get this from [your
+* `key`:<i>string</i> [required] your key; get this from [your
   dashboard](https://dash.pusher.com)
-
-* `cluster`:_string_ [optional] the host that your service lives on, defaults to
-  `api-ceres.pusherplatform.io`
 
 ### Example
 
 ```js
-const feeds = new Feeds({serviceId: your_service_id, serviceKey: your_service_key});
+const feeds = new Feeds({instance: your_instance_id, key: your_key});
 ```
 
 ## Publish single item to a feed
@@ -206,7 +203,7 @@ curl -X POST \
 http://localhost:5000/feeds/tokens
 ```
 
-### Error handling
+## Error handling
 
 Since all the public methods on `Feeds` class returns `Promise` you should
 always call `.catch()` on it to handle `Error` properly. `pusher-feeds-server`

@@ -2,14 +2,14 @@
 import url from 'url';
 import { Readable } from 'stream';
 import type { IncomingMessage } from 'http';
-import { App as PusherService, TOKEN_LEEWAY } from 'pusher-platform-node';
+import { Instance as PusherInstance, DEFAULT_TOKEN_LEEWAY } from 'pusher-platform-node';
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';
-import { jsonToReadable, getCurrentTimeInSeconds } from './utils';
+import { getCurrentTimeInSeconds } from './utils';
 import { ClientError } from './errors';
 
-import { defaultCluster, pathRegex } from './constants';
+import { pathRegex } from './constants';
 
 type TokenWithExpiry = {
   token: string;
@@ -23,13 +23,13 @@ type AuthorizePayload = {
 };
 
 type Options = {
-  cluster?: string;
-  serviceId: string;
-  serviceKey: string;
+  instance: string;
+  key: string;
+  host?: string;
 };
 
 interface FeedsInterface {
-  pusherService: PusherService;
+  pusherInstance: PusherInstance;
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
@@ -37,12 +37,13 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({cluster, serviceId, serviceKey}: Options = {}) => {
-  const basePath = 'services/feeds/v1/feeds';
-  const pusherService = new PusherService({
-    cluster: cluster || defaultCluster,
-    appId: serviceId,
-    appKey: serviceKey,
+export default ({instance, key, host}: Options = {}) => {
+  const pusherInstance = new PusherInstance({
+    instance,
+    key,
+    host,
+    serviceVersion: 'v1',
+    serviceName: 'feeds'
   });
 
   /**
@@ -68,11 +69,11 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
       }
     }
     // Otherwise generate new token and its expiration time
-    const {token, expires_in} = pusherService.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
+    const {token, expires_in} = pusherInstance.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
     
     tokenWithExpirationTime = {
       token,
-      expiresIn: getCurrentTimeInSeconds() + expires_in - TOKEN_LEEWAY
+      expiresIn: getCurrentTimeInSeconds() + expires_in - DEFAULT_TOKEN_LEEWAY
     };
 
     return token;
@@ -82,14 +83,14 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
    * @private
    */
   const publish = (feedId: string, items: Array<any>): Promise<any> => (
-    pusherService.request({
+    pusherInstance.request({
       method: 'POST',
-      path: `${basePath}/${feedId}/items`,
+      path: `/feeds/${feedId}/items`,
       jwt: getServerToken(),
       headers: {
         'Content-Type': 'application/json'
       },
-      body: jsonToReadable({ items }),
+      body: { items },
     })
   );
 
@@ -97,9 +98,9 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
    * @private
    */
   const deleteItems = (feedId): Promise<any> => (
-    pusherService.request({
+    pusherInstance.request({
       method: 'DELETE',
-      path: `${basePath}/${feedId}/items`,
+      path: `/feeds/${feedId}/items`,
       jwt: getServerToken()
     })
   );
@@ -133,14 +134,14 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
       throw new ClientError('Forbidden');
     }
     
-    return pusherService.authenticate({ body: payload }, getFeedsPermissionClaims(action, path));
+    return pusherInstance.authenticate(payload, getFeedsPermissionClaims(action, path));
   };
 
   class Feeds implements FeedsInterface {
-    pusherService: typeof PusherService;
+    pusherInstance: typeof PusherInstance;
 
-    constructor(pusherApp: typeof pusherService) {
-      this.pusherService = pusherApp;
+    constructor(pusherApp: typeof pusherInstance) {
+      this.pusherInstance = pusherApp;
     }
 
     publish (feedId: string, item: any): Promise<any> {
@@ -184,5 +185,5 @@ export default ({cluster, serviceId, serviceKey}: Options = {}) => {
     }
   }
 
-  return new Feeds(pusherService);
+  return new Feeds(pusherInstance);
 };
