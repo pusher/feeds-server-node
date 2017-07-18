@@ -129,7 +129,7 @@ feeds.delete('newsfeed')
 
 This method allows you to authorize your clients for access to a certain feed.
 Please see auth process
-[diagram](http://docs.pusher.com/feeds/private-feeds/#reading-private-feeds-on-the-client)
+[diagram](http://docs.pusher.com/feeds/concepts/private-feeds/#reading-private-feeds-on-the-client)
 and [example](https://github.com/pusher/feeds-auth-example-app) how to implement
 this method with collaboration with one of our client side libraries.
 
