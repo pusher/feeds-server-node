@@ -1,4 +1,4 @@
-# Server Node reference
+# Feeds Server Node reference
 
 This is a server side Node.js library for [Feeds](https://pusher.com/feeds) service.
 See the full documentation [here](http://docs.pusher.com/feeds/)
@@ -7,6 +7,14 @@ Please note that the reference is annotated with a statically typed dialect like
 [Flow](https://flow.org/)
 
 ### Importing
+
+Add as a dependency using [Yarn](https://yarnpkg.com) or [npm](https://www.npmjs.com).
+
+```sh
+yarn add pusher-feeds-server
+```
+
+Then import the `Feeds` constructor.
 
 #### ES6
 ```js
