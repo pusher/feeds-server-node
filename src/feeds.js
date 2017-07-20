@@ -23,8 +23,8 @@ type AuthorizePayload = {
 };
 
 type Options = {
-  instance: string;
-  key: string;
+  instanceId: string;
+  instanceKey: string;
   host?: string;
 };
 
@@ -37,10 +37,10 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({instance, key, host}: Options = {}) => {
+export default ({instanceId, instanceKey, host}: Options = {}) => {
   const pusherInstance = new PusherInstance({
-    instance,
-    key,
+    instance: instanceId,
+    key: instanceKey,
     host,
     serviceVersion: 'v1',
     serviceName: 'feeds'
