@@ -8,8 +8,8 @@ import bodyParser from 'body-parser';
 import Feeds from '../src/index';
 
 const feeds = new Feeds({
-  instance: '',
-  key: ''
+  instanceId: '',
+  instanceKey: ''
 });
 
 function hasPermission(userId, feedId) {
