@@ -23,7 +23,7 @@ type AuthorizePayload = {
 };
 
 type Options = {
-  instance: string;
+  instanceId: string;
   key: string;
   host?: string;
 };
@@ -37,9 +37,9 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({instance, key, host}: Options = {}) => {
+export default ({instanceId, key, host}: Options = {}) => {
   const pusherInstance = new PusherInstance({
-    instance,
+    instanceId,
     key,
     host,
     serviceVersion: 'v1',
@@ -70,7 +70,7 @@ export default ({instance, key, host}: Options = {}) => {
     }
     // Otherwise generate new token and its expiration time
     const {token, expires_in} = pusherInstance.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
-    
+
     tokenWithExpirationTime = {
       token,
       expiresIn: getCurrentTimeInSeconds() + expires_in - DEFAULT_TOKEN_LEEWAY
@@ -133,7 +133,7 @@ export default ({instance, key, host}: Options = {}) => {
     if (!hasPermission) {
       throw new ClientError('Forbidden');
     }
-    
+
     return pusherInstance.authenticate(payload, getFeedsPermissionClaims(action, path));
   };
 
@@ -170,7 +170,7 @@ export default ({instance, key, host}: Options = {}) => {
         if (!matchedPath) {
           throw new ClientError(`Path must match regex ${pathRegex.toString()}`);
         }
-        
+
         return hasPermissionCallback(action, matchedPath[1]);
       };
 
