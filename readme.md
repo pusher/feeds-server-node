@@ -101,7 +101,10 @@ feeds
   .catch((err) => console.log(err));
 ```
 
-## Paginate back through previously published items
+## Pagination
+
+Query a feed for pages of previously published items. Items are returned in
+descending order of item ID.
 
 ### Definition
 
