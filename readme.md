@@ -112,7 +112,7 @@ feeds.paginate(feedId: string, options: ?PaginateOptions)
 #### Arguments
 
 * `feedId`: The feed ID to fetch items from.
-* `options`: On object with the following keys
+* `options`: An object with the following keys
   * `cursor: ?number`: the ID of the first item in the page – if not provided,
     retrieves the most recently published items
   * `limit: ?number`: the number of items to retrieve
