@@ -31,18 +31,18 @@ type Options = {
 type PaginateOptions = {
   cursor: ?number;
   limit: ?number;
-}
+};
 
 type Item = {
   id: string;
   created: number;
   data: any;
-}
+};
 
 type PaginateResponse = {
   items: [Item];
   next_cursor: ?string;
-}
+};
 
 interface FeedsInterface {
   pusherInstance: PusherInstance;
