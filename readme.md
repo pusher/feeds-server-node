@@ -101,6 +101,50 @@ feeds
   .catch((err) => console.log(err));
 ```
 
+## Paginate back through previously published items
+
+### Definition
+
+```js
+feeds.paginate(feedId: string, options: ?PaginateOptions)
+```
+
+#### Arguments
+
+* `feedId`: The feed ID to fetch items from.
+* `options`: On object with the following keys
+  * `cursor: ?number`: the ID of the first item in the page – if not provided,
+    retrieves the most recently published items
+  * `limit: ?number`: the number of items to retrieve
+
+#### Returns
+
+Promise of type `Promise<PaginateResponse>` where `PaginateResponse` is
+
+```js
+items: [Item];
+next_cursor: ?string;
+```
+
+and `Item` is
+
+```js
+id: string;
+created: number;
+data: any;
+```
+
+### Example
+
+Get a page containing the last 25 items of the feed `"my-feed"`.
+
+```js
+feeds.paginate("my-feed", { limit: 25 }).then(({ items }) => {
+  // Do something with each of the items
+  items.forEach(...);
+});
+```
+
 ## Delete all items in a feed
 
 ### Definition

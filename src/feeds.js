@@ -29,7 +29,6 @@ type Options = {
 };
 
 type PaginateOptions = {
-  feedId: string;
   cursor: ?number;
   limit: ?number;
 }
@@ -47,7 +46,7 @@ type PaginateResponse = {
 
 interface FeedsInterface {
   pusherInstance: PusherInstance;
-  paginate(options: PaginateOptions): Promise<PaginateResponse>;
+  paginate(feedId: string, options: ?PaginateOptions): Promise<PaginateResponse>;
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
@@ -100,9 +99,10 @@ export default ({instanceId, key, host}: Options = {}) => {
   /**
    * @private
    */
-  const paginate = ({ feedId, cursor, limit } : PaginateOptions)
-      : Promise<PaginateResponse> => (
-    parseResponseBody(pusherInstance.request({
+  const paginate = (feedId, options : ?PaginateOptions)
+      : Promise<PaginateResponse> => {
+    const { cursor, limit } = options || {};
+    return parseResponseBody(pusherInstance.request({
       method: 'GET',
       path: `/feeds/${feedId}/items`,
       qs: {
@@ -110,8 +110,8 @@ export default ({instanceId, key, host}: Options = {}) => {
         limit: limit || 50,
       },
       jwt: getServerToken(),
-    }))
-  );
+    }));
+  };
 
   /**
    * @private
@@ -178,8 +178,9 @@ export default ({instanceId, key, host}: Options = {}) => {
       this.pusherInstance = pusherApp;
     }
 
-    paginate (options : PaginateOptions): Promise<PaginateResponse> {
-      return paginate(options);
+    paginate (feedId: string, options: ?PaginateOptions)
+        : Promise<PaginateResponse> {
+      return paginate(feedId, options);
     }
 
     publish (feedId: string, item: any): Promise<any> {
