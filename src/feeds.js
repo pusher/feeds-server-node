@@ -6,7 +6,7 @@ import { Instance as PusherInstance, DEFAULT_TOKEN_LEEWAY } from 'pusher-platfor
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';
-import { getCurrentTimeInSeconds } from './utils';
+import { getCurrentTimeInSeconds, parseResponseBody } from './utils';
 import { ClientError } from './errors';
 
 import { pathRegex } from './constants';
@@ -102,7 +102,7 @@ export default ({instanceId, key, host}: Options = {}) => {
    */
   const paginate = ({ feedId, cursor, limit } : PaginateOptions)
       : Promise<PaginateResponse> => (
-    pusherInstance.request({
+    parseResponseBody(pusherInstance.request({
       method: 'GET',
       path: `/feeds/${feedId}/items`,
       qs: {
@@ -110,10 +110,7 @@ export default ({instanceId, key, host}: Options = {}) => {
         limit: limit || 50,
       },
       jwt: getServerToken(),
-    }).then(({ body }) => {
-      const { items, next_cursor } = JSON.parse(body);
-      return { items, next_cursor };
-    })
+    }))
   );
 
   /**

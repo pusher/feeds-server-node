@@ -10,3 +10,15 @@ export const jsonToReadable = (json: Object): Readable => {
 };
 
 export const getCurrentTimeInSeconds = (): number => Math.floor(Date.now() / 1000);
+
+export const parseResponseBody = (promise: Promise<any>): Promise<any> => (
+  new Promise((resolve, reject) => {
+    promise.then(response => {
+      try {
+        resolve(JSON.parse(response.body));
+      } catch (err) {
+        reject(err);
+      }
+    }).catch(reject);
+  })
+);
