@@ -28,8 +28,26 @@ type Options = {
   host?: string;
 };
 
+type PaginateOptions = {
+  feedId: string;
+  cursor: ?number;
+  limit: ?number;
+}
+
+type Item = {
+  id: string;
+  created: number;
+  data: any;
+}
+
+type PaginateResponse = {
+  items: [Item];
+  next_cursor: ?string;
+}
+
 interface FeedsInterface {
   pusherInstance: PusherInstance;
+  paginate(options: PaginateOptions): Promise<PaginateResponse>;
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
@@ -78,6 +96,25 @@ export default ({instanceId, key, host}: Options = {}) => {
 
     return token;
   };
+
+  /**
+   * @private
+   */
+  const paginate = ({ feedId, cursor, limit } : PaginateOptions)
+      : Promise<PaginateResponse> => (
+    pusherInstance.request({
+      method: 'GET',
+      path: `/feeds/${feedId}/items`,
+      qs: {
+        cursor,
+        limit: limit || 50,
+      },
+      jwt: getServerToken(),
+    }).then(({ body }) => {
+      const { items, next_cursor } = JSON.parse(body);
+      return { items, next_cursor };
+    })
+  );
 
   /**
    * @private
@@ -142,6 +179,10 @@ export default ({instanceId, key, host}: Options = {}) => {
 
     constructor(pusherApp: typeof pusherInstance) {
       this.pusherInstance = pusherApp;
+    }
+
+    paginate (options : PaginateOptions): Promise<PaginateResponse> {
+      return paginate(options);
     }
 
     publish (feedId: string, item: any): Promise<any> {
