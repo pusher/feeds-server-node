@@ -6,7 +6,7 @@ import { Instance as PusherInstance, DEFAULT_TOKEN_LEEWAY } from 'pusher-platfor
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';
-import { getCurrentTimeInSeconds } from './utils';
+import { getCurrentTimeInSeconds, parseResponseBody } from './utils';
 import { ClientError } from './errors';
 
 import { pathRegex } from './constants';
@@ -28,8 +28,25 @@ type Options = {
   host?: string;
 };
 
+type PaginateOptions = {
+  cursor: ?number;
+  limit: ?number;
+};
+
+type Item = {
+  id: string;
+  created: number;
+  data: any;
+};
+
+type PaginateResponse = {
+  items: [Item];
+  next_cursor: ?string;
+};
+
 interface FeedsInterface {
   pusherInstance: PusherInstance;
+  paginate(feedId: string, options: ?PaginateOptions): Promise<PaginateResponse>;
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
@@ -77,6 +94,23 @@ export default ({instanceId, key, host}: Options = {}) => {
     };
 
     return token;
+  };
+
+  /**
+   * @private
+   */
+  const paginate = (feedId, options : ?PaginateOptions)
+      : Promise<PaginateResponse> => {
+    const { cursor, limit } = options || {};
+    return parseResponseBody(pusherInstance.request({
+      method: 'GET',
+      path: `/feeds/${feedId}/items`,
+      qs: {
+        cursor,
+        limit: limit || 50,
+      },
+      jwt: getServerToken(),
+    }));
   };
 
   /**
@@ -142,6 +176,11 @@ export default ({instanceId, key, host}: Options = {}) => {
 
     constructor(pusherApp: typeof pusherInstance) {
       this.pusherInstance = pusherApp;
+    }
+
+    paginate (feedId: string, options: ?PaginateOptions)
+        : Promise<PaginateResponse> {
+      return paginate(feedId, options);
     }
 
     publish (feedId: string, item: any): Promise<any> {
