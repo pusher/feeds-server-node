@@ -6,7 +6,7 @@ import { Instance as PusherInstance, DEFAULT_TOKEN_LEEWAY } from 'pusher-platfor
 
 import { READ_PERMISSION, ALL_PERMISSION, clientPermissionTypes, getFeedsPermissionClaims } from './permissions';
 import type { ActionType } from './permissions';
-import { getCurrentTimeInSeconds } from './utils';
+import { getCurrentTimeInSeconds, parseResponseBody } from './utils';
 import { ClientError } from './errors';
 
 import { pathRegex } from './constants';
@@ -23,13 +23,30 @@ type AuthorizePayload = {
 };
 
 type Options = {
-  instance: string;
+  instanceId: string;
   key: string;
   host?: string;
 };
 
+type PaginateOptions = {
+  cursor: ?number;
+  limit: ?number;
+};
+
+type Item = {
+  id: string;
+  created: number;
+  data: any;
+};
+
+type PaginateResponse = {
+  items: [Item];
+  next_cursor: ?string;
+};
+
 interface FeedsInterface {
   pusherInstance: PusherInstance;
+  paginate(feedId: string, options: ?PaginateOptions): Promise<PaginateResponse>;
   publish(feedId: string, item: any): Promise<any>;
   publishBatch(feedId: string, items: Array<any>): Promise<any>;
   delete(feedId: string): Promise<any>;
@@ -37,9 +54,9 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({instance, key, host}: Options = {}) => {
+export default ({instanceId, key, host}: Options = {}) => {
   const pusherInstance = new PusherInstance({
-    instance,
+    instanceId,
     key,
     host,
     serviceVersion: 'v1',
@@ -70,13 +87,30 @@ export default ({instance, key, host}: Options = {}) => {
     }
     // Otherwise generate new token and its expiration time
     const {token, expires_in} = pusherInstance.generateAccessToken(getFeedsPermissionClaims(ALL_PERMISSION, ALL_PERMISSION));
-    
+
     tokenWithExpirationTime = {
       token,
       expiresIn: getCurrentTimeInSeconds() + expires_in - DEFAULT_TOKEN_LEEWAY
     };
 
     return token;
+  };
+
+  /**
+   * @private
+   */
+  const paginate = (feedId, options : ?PaginateOptions)
+      : Promise<PaginateResponse> => {
+    const { cursor, limit } = options || {};
+    return parseResponseBody(pusherInstance.request({
+      method: 'GET',
+      path: `/feeds/${feedId}/items`,
+      qs: {
+        cursor,
+        limit: limit || 50,
+      },
+      jwt: getServerToken(),
+    }));
   };
 
   /**
@@ -133,7 +167,7 @@ export default ({instance, key, host}: Options = {}) => {
     if (!hasPermission) {
       throw new ClientError('Forbidden');
     }
-    
+
     return pusherInstance.authenticate(payload, getFeedsPermissionClaims(action, path));
   };
 
@@ -142,6 +176,11 @@ export default ({instance, key, host}: Options = {}) => {
 
     constructor(pusherApp: typeof pusherInstance) {
       this.pusherInstance = pusherApp;
+    }
+
+    paginate (feedId: string, options: ?PaginateOptions)
+        : Promise<PaginateResponse> {
+      return paginate(feedId, options);
     }
 
     publish (feedId: string, item: any): Promise<any> {
@@ -170,7 +209,7 @@ export default ({instance, key, host}: Options = {}) => {
         if (!matchedPath) {
           throw new ClientError(`Path must match regex ${pathRegex.toString()}`);
         }
-        
+
         return hasPermissionCallback(action, matchedPath[1]);
       };
 

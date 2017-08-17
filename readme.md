@@ -1,4 +1,4 @@
-# Server Node reference
+# Feeds Server Node reference
 
 This is a server side Node.js library for [Feeds](https://pusher.com/feeds) service.
 See the full documentation [here](http://docs.pusher.com/feeds/)
@@ -7,6 +7,14 @@ Please note that the reference is annotated with a statically typed dialect like
 [Flow](https://flow.org/)
 
 ### Importing
+
+Add as a dependency using [Yarn](https://yarnpkg.com) or [npm](https://www.npmjs.com).
+
+```sh
+yarn add pusher-feeds-server
+```
+
+Then import the `Feeds` constructor.
 
 #### ES6
 ```js
@@ -24,7 +32,7 @@ var Feeds = require('pusher-feeds-server');
 
 Constructor `Feeds` takes a single options object with the following properties:
 
-* `instance`:<i>string</i> [required] your instance ID; get this from [your
+* `instanceId`:<i>string</i> [required] your instance ID; get this from [your
 dashboard](https://dash.pusher.com)
 
 * `key`:<i>string</i> [required] your key; get this from [your
@@ -33,7 +41,7 @@ dashboard](https://dash.pusher.com)
 ### Example
 
 ```js
-const feeds = new Feeds({instance: your_instance_id, key: your_key});
+const feeds = new Feeds({instanceId: your_instance_id, key: your_key});
 ```
 
 ## Publish single item to a feed
@@ -93,6 +101,53 @@ feeds
   .catch((err) => console.log(err));
 ```
 
+## Pagination
+
+Query a feed for pages of previously published items. Items are returned in
+descending order of item ID.
+
+### Definition
+
+```js
+feeds.paginate(feedId: string, options: ?PaginateOptions)
+```
+
+#### Arguments
+
+* `feedId`: The feed ID to fetch items from.
+* `options`: An object with the following keys
+  * `cursor: ?number`: the ID of the first item in the page – if not provided,
+    retrieves the most recently published items
+  * `limit: ?number`: the number of items to retrieve, defaults to 50
+
+#### Returns
+
+Promise of type `Promise<PaginateResponse>` where `PaginateResponse` is
+
+```js
+items: [Item];
+next_cursor: ?string;
+```
+
+and `Item` is
+
+```js
+id: string;
+created: number;
+data: any;
+```
+
+### Example
+
+Get a page containing the last 25 items of the feed `"my-feed"`.
+
+```js
+feeds.paginate("my-feed", { limit: 25 }).then(({ items }) => {
+  // Do something with each of the items
+  items.forEach(...);
+});
+```
+
 ## Delete all items in a feed
 
 ### Definition
@@ -121,7 +176,7 @@ feeds.delete('newsfeed')
 
 This method allows you to authorize your clients for access to a certain feed.
 Please see auth process
-[diagram](http://docs.pusher.com/feeds/private-feeds/#reading-private-feeds-on-the-client)
+[diagram](http://docs.pusher.com/feeds/concepts/private-feeds/#reading-private-feeds-on-the-client)
 and [example](https://github.com/pusher/feeds-auth-example-app) how to implement
 this method with collaboration with one of our client side libraries.
 

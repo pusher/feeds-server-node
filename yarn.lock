@@ -885,9 +885,15 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-debug@2.6.7, debug@^2.1.1, debug@^2.2.0:
+debug@2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.7.tgz#92bad1f6d05bbb6bba22cca88bcd0ec894c2861e"
+  dependencies:
+    ms "2.0.0"
+
+debug@^2.1.1, debug@^2.2.0:
+  version "2.6.8"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
     ms "2.0.0"
 
@@ -1558,9 +1564,9 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
-pusher-platform-node@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/pusher-platform-node/-/pusher-platform-node-0.7.0.tgz#0cbb45c98f82c851f5ab7067304f37c520d9dd41"
+pusher-platform-node@^0.8.2:
+  version "0.8.2"
+  resolved "https://registry.yarnpkg.com/pusher-platform-node/-/pusher-platform-node-0.8.2.tgz#c0ceb6e43ebeeb3ea5a7558bad0ad9028dcfa6a8"
   dependencies:
     body-parser "^1.17.2"
     extend "^2.0.1"
