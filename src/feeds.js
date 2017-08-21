@@ -102,30 +102,34 @@ export default ({instanceId, key, host}: Options = {}) => {
   const paginate = (feedId, options : ?PaginateOptions)
       : Promise<PaginateResponse> => {
     const { cursor, limit } = options || {};
-    return parseResponseBody(pusherInstance.request({
-      method: 'GET',
-      path: `/feeds/${feedId}/items`,
-      qs: {
-        cursor,
-        limit: limit || 50,
-      },
-      jwt: getServerToken(),
-    }));
+    return parseResponseBody(
+      pusherInstance.request({
+        method: 'GET',
+        path: `/feeds/${feedId}/items`,
+        qs: {
+          cursor,
+          limit: limit || 50,
+        },
+        jwt: getServerToken(),
+      })
+    )
   };
 
   /**
    * @private
    */
   const publish = (feedId: string, items: Array<any>): Promise<any> => (
-    pusherInstance.request({
-      method: 'POST',
-      path: `/feeds/${feedId}/items`,
-      jwt: getServerToken(),
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: { items },
-    })
+    parseResponseBody(
+      pusherInstance.request({
+        method: 'POST',
+        path: `/feeds/${feedId}/items`,
+        jwt: getServerToken(),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: { items },
+      })
+    )
   );
 
   /**
@@ -137,6 +141,7 @@ export default ({instanceId, key, host}: Options = {}) => {
       path: `/feeds/${feedId}/items`,
       jwt: getServerToken()
     })
+    .then(data => '')
   );
 
   const authorize = async (

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>1984 Notes</title>
-  <script src="https://unpkg.com/pusher-feeds-client"></script>
+  <script src="https://unpkg.com/pusher-feeds-client@0.8.0"></script>
   <script>
 function publishToNewsfeed() {
   const e = window.event.preventDefault();
@@ -50,11 +50,12 @@ function formatTime(timestamp) {
 }
 
 const feeds = new Feeds({
-  instanceId: ''
+  instanceId: '',
 });
+
 feeds.feed("newsfeed").subscribe({
   previousItems: 10,
-  onItem: ({ body: { created, data } }) => {
+  onItem: ({ created, data }) => {
     const itemEl = document.createElement("li");
     itemEl.textContent =
       `${formatTime(created)}: ${data.message} – ${data.author}`;
@@ -64,7 +65,7 @@ feeds.feed("newsfeed").subscribe({
 
 feeds.feed("private-$NOTE_ID").subscribe({
   previousItems: 10,
-  onItem: ({ body: { created, data } }) => {
+  onItem: ({ created, data }) => {
     const itemEl = document.createElement("li");
     itemEl.innerText = `${formatTime(created)}: ${data.message}`;
     document.getElementById("notes").prepend(itemEl);
