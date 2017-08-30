@@ -9,7 +9,7 @@ import Feeds from '../src/index';
 
 const feeds = new Feeds({
   instanceId: '',
-  key: ''
+  key: '',
 });
 
 function hasPermission(userId, feedId) {
@@ -69,7 +69,10 @@ app.post('/notes/:user_id', (req, res) => {
 
   feeds
     .publish(feedId, req.body)
-    .then(() => res.sendStatus(204))
+    .then((data) => {
+      console.log(`Publish private:`, data);
+      res.sendStatus(204)
+    })
     .catch(err => res.status(400).send(err));
 });
 
@@ -82,8 +85,13 @@ app.delete('/notes/:user_id', (req, res) => {
 
   feeds
     .delete(feedId)
-    .then(() => res.sendStatus(204))
-    .catch(err => res.status(400).send(err));
+    .then((data) => {
+      res.sendStatus(204);
+      console.log(`Delete private:`, data);
+    })
+    .catch(err => {
+      res.status(400).send(err);
+    });
 });
 
 // Publis data into public feed
@@ -91,7 +99,10 @@ app.delete('/notes/:user_id', (req, res) => {
 app.post('/newsfeed', (req, res) => {
   feeds
     .publish('newsfeed', req.body)
-    .then(data => res.sendStatus(204))
+    .then(data => {
+      console.log(`Publish public:`, data);
+      res.sendStatus(204)
+    })
     .catch(err => {
       res.status(400).send(err)
     });
@@ -121,6 +132,17 @@ app.post('/feeds/tokens', (req, res) => {
     .catch(err => {
       res.status(400).send(`Catched - ${err.name}: ${err.message}`)
     });
+});
+
+app.get('/newsfeed/paginate', (req, res) => {
+  const { limit = 0 } = req.query;
+
+  feeds
+  .paginate('newsfeed', {limit})
+  .then(data => {
+    res.send(data);
+  })
+  .catch(err => console.log(err));
 });
 
 const port = process.env.PORT || 5000;

@@ -1,0 +1,43 @@
+#!/usr/bin/env node
+
+// Simple script for generating JSON Web Token which can be then use for
+// debugging feeds REST API.
+// After running this script the token is printed to console.
+// Then can be used with CURL for instance: curl -H "Authorization: Bearer <ACCESS_TOKEN>"
+
+const Pusher = require('pusher-platform-node');
+const DEFAULT_TOKEN_LEEWAY = Pusher.DEFAULT_TOKEN_LEEWAY;
+const PusherInstance = Pusher.Instance;
+
+const instanceId = process.argv[2];
+
+if (!instanceId) {
+    throw new TypeError('Please supply instanceId as first argument.');
+}
+
+const key = process.argv[3];
+
+if (!key) {
+    throw new TypeError('Please supply key as second argument.');
+}
+
+const pusherInstance = new PusherInstance({
+    instanceId,
+    key,
+    host: '',
+    serviceVersion: 'v1',
+    serviceName: 'feeds'
+});
+
+const {token, expires_in} = pusherInstance.generateAccessToken({
+    serviceClaims: {
+        feeds: {
+            permission: {
+                path: '*',
+                action: '*'
+            }
+        }
+    }
+});
+
+console.log(token);
