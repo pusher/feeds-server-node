@@ -1,7 +1,6 @@
 {
   "name": "pusher-feeds-server",
-  "version": "0.3.0",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "main": "./build/index.js",
   "license": "MIT",
   "scripts": {
