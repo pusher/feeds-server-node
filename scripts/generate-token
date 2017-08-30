@@ -9,17 +9,26 @@ const Pusher = require('pusher-platform-node');
 const DEFAULT_TOKEN_LEEWAY = Pusher.DEFAULT_TOKEN_LEEWAY;
 const PusherInstance = Pusher.Instance;
 
-const instanceId = process.argv[2];
+const requiredArgs = ['instanceId', 'key', 'feedId'];
+const args = {};
 
-if (!instanceId) {
-    throw new TypeError('Please supply instanceId as first argument.');
+for (let i=0; i<requiredArgs.length; i++) {
+    let argumentName = requiredArgs[i];
+
+    if (!process.argv[i+2]) {
+        throw new TypeError(`Please supply ${argumentName} as ${i+1} argument.`);
+    }
+    
+    args[argumentName] = process.argv[i+2];
 }
 
-const key = process.argv[3];
+const { instanceId, key, feedId } = args;
 
-if (!key) {
-    throw new TypeError('Please supply key as second argument.');
-}
+const getUrl = () => {
+    const parsedInstanceId = instanceId.split(':').pop();
+
+    return `https://us1.pusherplatform.io/services/feeds/v1/${parsedInstanceId}/feeds/${feedId}/items`;
+};
 
 const pusherInstance = new PusherInstance({
     instanceId,
@@ -29,7 +38,7 @@ const pusherInstance = new PusherInstance({
     serviceName: 'feeds'
 });
 
-const {token, expires_in} = pusherInstance.generateAccessToken({
+const { token } = pusherInstance.generateAccessToken({
     serviceClaims: {
         feeds: {
             permission: {
@@ -40,4 +49,8 @@ const {token, expires_in} = pusherInstance.generateAccessToken({
     }
 });
 
-console.log(token);
+const curlTemplate = () => (
+    `curl -H "Authorization: Bearer ${token}" \ ${getUrl()}`
+);
+
+console.log(curlTemplate());
