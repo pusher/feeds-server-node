@@ -9,10 +9,10 @@ const Pusher = require('pusher-platform-node');
 const DEFAULT_TOKEN_LEEWAY = Pusher.DEFAULT_TOKEN_LEEWAY;
 const PusherInstance = Pusher.Instance;
 
-const instanceId = process.argv[2];
+const instanceLocator = process.argv[2];
 
-if (!instanceId) {
-    throw new TypeError('Please supply instanceId as first argument.');
+if (!instanceLocator) {
+    throw new TypeError('Please supply instanceLocator as first argument.');
 }
 
 const key = process.argv[3];
@@ -22,7 +22,7 @@ if (!key) {
 }
 
 const pusherInstance = new PusherInstance({
-    instanceId,
+    instanceLocator,
     key,
     host: '',
     serviceVersion: 'v1',

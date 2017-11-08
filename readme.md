@@ -32,8 +32,8 @@ var Feeds = require('pusher-feeds-server');
 
 Constructor `Feeds` takes a single options object with the following properties:
 
-* `instanceId`:<i>string</i> [required] your instance ID; get this from [your
-dashboard](https://dash.pusher.com)
+* `instanceLocator`:<i>string</i> [required] your instance locator; get this
+  from [your dashboard](https://dash.pusher.com)
 
 * `key`:<i>string</i> [required] your key; get this from [your
   dashboard](https://dash.pusher.com)
@@ -41,7 +41,10 @@ dashboard](https://dash.pusher.com)
 ### Example
 
 ```js
-const feeds = new Feeds({instanceId: your_instance_id, key: your_key});
+const feeds = new Feeds({
+  instanceLocator: your_instance_locator,
+  key: your_key,
+});
 ```
 
 ## Publish single item to a feed

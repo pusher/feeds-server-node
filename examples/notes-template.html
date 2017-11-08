@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>1984 Notes</title>
-  <script src="https://unpkg.com/pusher-feeds-client@0.9.0"></script>
+  <script src="https://unpkg.com/pusher-feeds-client@0.10.0"></script>
   <script>
 function publishToNewsfeed() {
   const e = window.event.preventDefault();
@@ -50,7 +50,7 @@ function formatTime(timestamp) {
 }
 
 const feeds = new Feeds({
-  instanceId: '',
+  instanceLocator: '',
 });
 
 feeds.feed("newsfeed").subscribe({
