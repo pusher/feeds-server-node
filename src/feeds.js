@@ -54,7 +54,7 @@ interface FeedsInterface {
   authorizePath(payload: AuthorizePayload, hasPermissionCallback: (action: ActionType, path: string) => Promise<bool> | bool): Promise<any>;
 };
 
-export default ({instanceLocator, key, host}: Options = {}) => {
+export default ({instanceLocator = '', key = '', host}: Options = {}) => {
   const pusherInstance = new PusherInstance({
     locator: instanceLocator,
     key,
