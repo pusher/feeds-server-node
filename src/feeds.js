@@ -231,3 +231,4 @@ export default ({instanceLocator = '', key = '', host}: Options = {}) => {
 
   return new Feeds(pusherInstance);
 };
+.
