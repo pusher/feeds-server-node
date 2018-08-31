@@ -173,7 +173,7 @@ export default ({instanceLocator = '', key = '', host}: Options = {}) => {
       throw new ClientError('Forbidden');
     }
 
-    return pusherInstance.authenticate(payload, getFeedsPermissionClaims(action, path));
+    return pusherInstance.authenticateWithRefreshToken(payload, getFeedsPermissionClaims(action, path));
   };
 
   class Feeds implements FeedsInterface {
